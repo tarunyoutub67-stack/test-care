@@ -1,0 +1,332 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <script>
+        const activeUser = JSON.parse(localStorage.getItem('currentUser'));
+        if (!activeUser) { window.location.replace('crm-login.html'); } 
+        else if (activeUser.role !== 'admin' && activeUser.role !== 'manager') {
+            alert("Access Denied."); window.location.replace('crm.html'); 
+        }
+    </script>
+
+    <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-database.js"></script>
+    
+    <meta charset="UTF-8">
+    <title>Invoice & Claims - CureAndCare</title>
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    
+    <style>
+        :root { --primary: #00a2ed; --primary-dark: #008ecc; --bg: #f8fafc; --border: #e2e8f0; --text-main: #1e293b; --text-light: #64748b; }
+        * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Plus Jakarta Sans', sans-serif; }
+        body { display: flex; height: 100vh; overflow: hidden; background: var(--bg); }
+
+        .sidebar { width: 260px; background: #ffffff; border-right: 1px solid var(--border); display: flex; flex-direction: column; flex-shrink: 0; z-index: 20; }
+        .logo-area { padding: 20px; border-bottom: 1px solid var(--border); }
+        .logo-area h2 { color: var(--primary); font-size: 20px; font-weight: 800; display: flex; align-items: center; gap: 10px; }
+        .nav-menu { flex: 1; overflow-y: auto; padding: 15px 10px; }
+        .nav-item { display: flex; align-items: center; gap: 12px; padding: 12px 15px; color: var(--text-light); font-weight: 600; font-size: 13px; border-radius: 8px; cursor: pointer; transition: 0.2s; margin-bottom: 5px; text-decoration: none; }
+        .nav-item:hover { background: #f1f5f9; color: var(--text-main); }
+        .nav-item.active { background: rgba(0,162,237,0.1); color: var(--primary); border-left: 4px solid var(--primary); }
+        
+        .dropdown-container { display: block; padding-left: 15px; margin-bottom: 10px; border-left: 2px solid #e2e8f0; margin-left: 20px; }
+        .dropdown-container .nav-item { padding: 10px 15px; font-size: 12px; margin-bottom: 2px; }
+
+        .main-content { flex: 1; display: flex; flex-direction: column; overflow: hidden; }
+        .top-header { height: 65px; background: #fff; border-bottom: 1px solid var(--border); display: flex; align-items: center; justify-content: space-between; padding: 0 25px; flex-shrink: 0; }
+        .page-title { font-size: 18px; font-weight: 700; color: var(--text-main); }
+        .user-profile { display: flex; align-items: center; gap: 15px; font-weight: 700; font-size: 13px; color: var(--text-main); }
+
+        .app-container { flex: 1; overflow-y: auto; padding: 25px; }
+        
+        /* ALERTS */
+        .alert-error { background: #fef2f2; border: 1px solid #fca5a5; color: #ef4444; padding: 15px; border-radius: 8px; margin-bottom: 20px; font-weight: 600; display: none; }
+        
+        /* INVOICE TOOLBAR */
+        .invoice-toolbar { background: #fff; padding: 20px; border-radius: 12px; border: 1px solid var(--border); margin-bottom: 25px; display: flex; flex-wrap: wrap; gap: 15px; align-items: center; justify-content: space-between; box-shadow: 0 2px 10px rgba(0,0,0,0.02); }
+        .select-input { padding: 10px 15px; border-radius: 6px; border: 1px solid #cbd5e1; font-size: 13px; font-weight: 600; outline: none; width: 300px; font-family: inherit;}
+        .select-input:focus { border-color: var(--primary); }
+        
+        .btn-invoice { background: #f59e0b; color: white; padding: 12px 20px; border-radius: 6px; font-weight: 700; cursor: pointer; border: none; font-size: 13px; transition:0.2s;}
+        .btn-print { background: #10b981; color: white; padding: 12px 20px; border-radius: 6px; font-weight: 700; cursor: pointer; border: none; font-size: 13px; transition:0.2s;}
+
+        /* INVOICE CARD */
+        .invoice-card { background: #fff; padding: 40px; border-radius: 12px; border: 1px solid var(--border); box-shadow: 0 5px 20px rgba(0,0,0,0.05); max-width: 900px; margin: 0 auto; display: none; }
+        .invoice-header { display: flex; justify-content: space-between; align-items: flex-start; border-bottom: 2px solid var(--border); padding-bottom: 25px; margin-bottom: 25px; }
+        
+        .client-details-box { display: flex; justify-content: space-between; background: #f8fafc; padding: 20px; border-radius: 8px; border: 1px solid #e2e8f0; margin-bottom: 25px; }
+        .editable-input { width: 100%; border: 1px dashed #cbd5e1; background: #fff; padding: 6px 10px; border-radius: 4px; font-family: inherit; margin-bottom: 8px; outline: none; transition: 0.2s;}
+        
+        .data-table { width: 100%; border-collapse: collapse; font-size: 13px; }
+        .data-table th { background: #f8fafc; padding: 15px; text-align: left; border-bottom: 2px solid #cbd5e1; color: #334155; font-weight:800; text-transform:uppercase; }
+        .data-table td { padding: 15px; border-bottom: 1px solid #e2e8f0; font-weight: 600; color: var(--text-main); }
+        .rate-input { width: 80px; padding: 8px; border: 1px dashed #cbd5e1; border-radius: 4px; text-align: center; font-weight: bold; font-family: inherit; font-size:13px;}
+        
+        .badge { padding: 4px 8px; border-radius: 4px; font-size: 10px; font-weight: 800; text-transform: uppercase; }
+        .badge.admin { background: #fee2e2; color: #b91c1c; }
+        .badge.manager { background: #fef08a; color: #854d0e; }
+    </style>
+</head>
+<body>
+
+    <div class="sidebar">
+        <div class="logo-area"><h2><i class="fas fa-heartbeat"></i> CureAndCare</h2></div>
+        <div class="nav-menu">
+            <a href="crm-home.html" class="nav-item"><i class="fas fa-home"></i> Dashboard</a>
+            
+            <div style="background:#e0f2fe; border: 1px solid #38bdf8; border-radius: 8px; margin: 10px 5px; overflow: hidden;">
+                <a href="#" class="nav-item open" style="color:#0284c7; font-weight:800;">
+                    <i class="fas fa-wallet"></i> FUNDING <i class="fas fa-chevron-up caret"></i>
+                </a>
+                <div class="dropdown-container" style="background:#fff; margin:0; padding:10px 15px; border-left:none;">
+                    <a href="crm-home.html" class="nav-item"><i class="fas fa-file-contract"></i> Create NDIS & Services</a>
+                    <a href="crm-invoice.html" class="nav-item active"><i class="fas fa-file-invoice-dollar"></i> Invoice & Claims</a>
+                </div>
+            </div>
+
+            <a href="crm.html" class="nav-item"><i class="fas fa-calendar-alt"></i> Time & Attendance</a>
+            <a href="crm-home.html" class="nav-item" id="navHr"><i class="fas fa-users-cog"></i> HR (Manage Staff)</a>
+        </div>
+    </div>
+
+    <div class="main-content">
+        <header class="top-header">
+            <div class="page-title">Generate Invoices & Claims</div>
+            <div class="user-profile">
+                <i class="fas fa-user-circle" style="font-size:18px; color:var(--primary);"></i> 
+                <span id="displayAdminName">Admin</span>
+                <span id="roleBadge" class="badge"></span>
+                <button onclick="logout()" style="background:#ef4444; color:#fff; border:none; padding:6px 12px; border-radius:6px; cursor:pointer; font-weight:700; font-size:11px; margin-left:10px;">Logout</button>
+            </div>
+        </header>
+
+        <div class="app-container">
+            <div id="errorAlert" class="alert-error"></div>
+
+            <div class="invoice-toolbar">
+                <div style="display:flex; gap:15px; align-items:center;">
+                    <div>
+                        <label style="display:block; font-size:11px; font-weight:bold; color:var(--text-light); margin-bottom:4px; text-transform:uppercase;">Select Location</label>
+                        <select id="invLocationSelect" class="select-input">
+                            <option value="27 Clearview Crescent Orange NSW 2800">27 Clearview Crescent Orange NSW 2800</option>
+                            <option value="27A Clearview Crescent Orange NSW 2800">27A Clearview Crescent Orange NSW 2800</option>
+                            <option value="7 Gilroy Place Orange NSW 2800">7 Gilroy Place Orange NSW 2800</option>
+                        </select>
+                    </div>
+                    <div>
+                        <label style="display:block; font-size:11px; font-weight:bold; color:var(--text-light); margin-bottom:4px; text-transform:uppercase;">Roster Start Date</label>
+                        <input type="date" id="invStartDate" value="2026-05-11" class="select-input" style="width:200px;">
+                    </div>
+                </div>
+                <div style="display:flex; gap:10px; margin-top:15px;">
+                    <button class="btn-invoice" id="fetchBtn" onclick="generateInvoice()"><i class="fas fa-cloud-download-alt"></i> Load Roster Data</button>
+                    <button class="btn-print" onclick="window.print()"><i class="fas fa-print"></i> Print Invoice</button>
+                </div>
+            </div>
+
+            <div class="invoice-card" id="invoiceCard">
+                <div class="invoice-header">
+                    <div>
+                        <h2 style="color:var(--primary); font-weight:800; font-size:28px;"><i class="fas fa-heartbeat"></i> CureAndCare</h2>
+                        <p style="color:#64748b; font-size:13px; margin-top:5px; font-weight:600;">Shift Billing & NDIS Claims Statement</p>
+                        <p style="color:#64748b; font-size:12px; margin-top:5px;" id="invLocText"></p>
+                    </div>
+                    <div style="text-align:right;">
+                        <h3 style="color:#1e293b; font-size:32px; letter-spacing:1px; font-weight:800;">INVOICE</h3>
+                    </div>
+                </div>
+
+                <div class="client-details-box">
+                    <div style="width: 50%;">
+                        <h4 style="color: var(--text-light); font-size: 11px; text-transform: uppercase; margin-bottom: 10px;">Bill To (Client Details)</h4>
+                        <input type="text" id="billClientName" class="editable-input" placeholder="Client Name" style="font-weight: 800; font-size: 16px; color: var(--text-main);">
+                        <input type="text" id="billNdisNo" class="editable-input" placeholder="NDIS Number" style="font-size: 13px;">
+                        <input type="text" class="editable-input" placeholder="Client Address / Suburb" style="font-size: 13px;">
+                    </div>
+                    <div style="width: 35%; text-align: right;">
+                        <h4 style="color: var(--text-light); font-size: 11px; text-transform: uppercase; margin-bottom: 10px;">Invoice Information</h4>
+                        <div style="display:flex; justify-content:flex-end; align-items:center; margin-bottom:8px;">
+                            <span style="font-size:13px; font-weight:700; margin-right:10px;">Invoice No:</span>
+                            <span style="font-size:14px; font-weight:800; color:var(--primary-dark);" id="randInvNo"></span>
+                        </div>
+                        <div style="display:flex; justify-content:flex-end; align-items:center; margin-bottom:8px;">
+                            <span style="font-size:13px; font-weight:700; margin-right:10px;">Issue Date:</span>
+                            <span style="font-size:13px; font-weight:600; color:var(--text-main);" id="issueDateText"></span>
+                        </div>
+                        <div style="display:flex; justify-content:flex-end; align-items:center;">
+                            <span style="font-size:13px; font-weight:700; margin-right:10px;">Due Date:</span>
+                            <input type="date" class="editable-input" style="width:140px; margin:0; text-align:right;">
+                        </div>
+                    </div>
+                </div>
+                
+                <table class="data-table">
+                    <thead>
+                        <tr>
+                            <th>Staff Name</th>
+                            <th style="text-align:center;">Total Shifts</th>
+                            <th style="text-align:center;">Total Hours</th>
+                            <th style="text-align:center;">Hourly Rate ($)</th>
+                            <th style="text-align:right;">Total Amount ($)</th>
+                        </tr>
+                    </thead>
+                    <tbody id="invoiceTableBody">
+                    </tbody>
+                </table>
+
+                <div style="margin-top: 40px; padding-top: 20px; border-top: 2px dashed var(--border); display: flex; justify-content: space-between; align-items: center;">
+                    <div>
+                        <p style="font-size: 12px; color: var(--text-light); font-weight:600;">* Payment terms as per NDIS service agreement.</p>
+                        <p style="font-size: 12px; color: var(--text-light); font-weight:600;">Generated automatically via CureAndCare Cloud CRM</p>
+                    </div>
+                    <div style="background: #f0f9ff; padding: 15px 25px; border-radius: 8px; border: 1px solid #bae6fd;">
+                        <h3 style="color:var(--text-main); font-size:20px;">Grand Total: <span id="grandTotalText" style="color:var(--primary-dark); font-weight:800; margin-left:10px;">$ 0.00</span></h3>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        if(activeUser) {
+            document.getElementById('displayAdminName').innerText = activeUser.name || activeUser.username;
+            let bClass = activeUser.role === 'admin' ? 'badge admin' : 'badge manager';
+            document.getElementById('roleBadge').className = bClass;
+            document.getElementById('roleBadge').innerText = activeUser.role;
+            if(activeUser.role === 'manager') document.getElementById('navHr').style.display = 'none';
+        }
+
+        document.getElementById('randInvNo').innerText = "#INV-" + Math.floor(1000 + Math.random() * 9000);
+        document.getElementById('issueDateText').innerText = new Date().toLocaleDateString('en-US', { day: 'numeric', month: 'short', year: 'numeric' });
+
+        const firebaseConfig = { apiKey: "AIzaSyC-Ito4dNRQ45IjIOWL63Hqk9sKzbvKe-M", authDomain: "cureandcare-crm.firebaseapp.com", databaseURL: "https://cureandcare-crm-default-rtdb.firebaseio.com", projectId: "cureandcare-crm" };
+        if (!firebase.apps.length) firebase.initializeApp(firebaseConfig);
+        const database = firebase.database();
+
+        function logout() { localStorage.clear(); window.location.replace('crm-login.html'); }
+
+        function parseTime(timeStr, ampm) {
+            if(!timeStr || timeStr === "Select" || timeStr === "Sleepover" || timeStr === "Leave" || timeStr === "Sick" || timeStr === "Training") return null;
+            let parts = timeStr.split(':'); let h = parseInt(parts[0]); let m = parseInt(parts[1]) / 60;
+            if (ampm === "PM" && h !== 12) h += 12; if (ampm === "AM" && h === 12) h = 0; return h + m;
+        }
+
+        let globalStaffStats = {};
+
+        function generateInvoice() {
+            const loc = document.getElementById('invLocationSelect').value; 
+            const date = document.getElementById('invStartDate').value;
+            const errorAlert = document.getElementById('errorAlert');
+            const btn = document.getElementById('fetchBtn');
+
+            const uniqueKey = "Roster_" + loc.replace(/[.#$\[\] ]/g, '_') + "_" + date;
+            
+            document.getElementById('invLocText').innerText = "Service Location: " + loc; 
+
+            btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Fetching...';
+            errorAlert.style.display = 'none';
+            document.getElementById('invoiceCard').style.display = 'none';
+
+            database.ref('rosters/' + uniqueKey).get().then((snapshot) => {
+                btn.innerHTML = '<i class="fas fa-cloud-download-alt"></i> Load Roster Data';
+                
+                if (!snapshot.exists()) {
+                    // 🚀 SMART ERROR MESSAGE
+                    errorAlert.innerHTML = `<i class="fas fa-exclamation-triangle"></i> No roster data found for <b>${loc}</b> on <b>${date}</b>. Please check your selection.`;
+                    errorAlert.style.display = 'block';
+                    return;
+                }
+
+                globalStaffStats = {}; 
+                let data = snapshot.val();
+
+                data.forEach(dayRow => {
+                    dayRow.forEach(cell => {
+                        if(cell.staff && cell.staff !== "None") {
+                            if(!globalStaffStats[cell.staff]) globalStaffStats[cell.staff] = { shifts: 0, hours: 0 };
+                            globalStaffStats[cell.staff].shifts += 1;
+                            
+                            if(cell.hr1 === "Sleepover" || cell.hr2 === "Sleepover") {
+                                globalStaffStats[cell.staff].hours += 8; 
+                            } else {
+                                let t1 = parseTime(cell.hr1, cell.ampm1); let t2 = parseTime(cell.hr2, cell.ampm2);
+                                if(t1 !== null && t2 !== null) { 
+                                    let duration = t2 - t1; if(duration < 0) duration += 24; 
+                                    globalStaffStats[cell.staff].hours += duration; 
+                                }
+                            }
+                        }
+                    });
+                });
+
+                renderInvoiceTable();
+                
+            }).catch(error => {
+                alert("Network Error fetching from Cloud.");
+                btn.innerHTML = '<i class="fas fa-cloud-download-alt"></i> Load Roster Data';
+            });
+        }
+
+        function renderInvoiceTable() {
+            const tbody = document.getElementById('invoiceTableBody'); 
+            tbody.innerHTML = ''; 
+            let defaultRate = 35; 
+            let grandTotal = 0;
+            
+            if(Object.keys(globalStaffStats).length === 0) {
+                tbody.innerHTML = '<tr><td colspan="5" style="text-align:center; padding: 40px; color: #94a3b8;">Roster is saved, but no staff assignments were found.</td></tr>';
+                document.getElementById('grandTotalText').innerText = "$ 0.00";
+            } else {
+                Object.keys(globalStaffStats).forEach(name => {
+                    let stats = globalStaffStats[name]; 
+                    let totalHrs = stats.hours.toFixed(2); 
+                    let initialTotal = (stats.hours * defaultRate);
+                    grandTotal += initialTotal;
+                    
+                    tbody.innerHTML += `
+                    <tr>
+                        <td><strong style="color:var(--text-main); font-size:14px;">${name}</strong></td>
+                        <td style="text-align:center; font-weight:700;">${stats.shifts}</td>
+                        <td style="text-align:center; font-weight:700;">${totalHrs} hrs</td>
+                        <td style="text-align:center;">
+                            $ <input type="number" class="rate-input" value="${defaultRate}" oninput="updateTotal(this, ${stats.hours})">
+                        </td>
+                        <td style="text-align:right; font-weight:800; color:var(--primary-dark); font-size:15px;" class="row-total" data-value="${initialTotal}">$ ${initialTotal.toFixed(2)}</td>
+                    </tr>`;
+                });
+                document.getElementById('grandTotalText').innerText = "$ " + grandTotal.toFixed(2);
+            }
+            
+            document.getElementById('invoiceCard').style.display = 'block';
+        }
+
+        function updateTotal(inputElement, hours) {
+            let newRate = parseFloat(inputElement.value) || 0;
+            let newTotal = newRate * hours;
+            
+            let rowTotalTd = inputElement.parentElement.nextElementSibling;
+            rowTotalTd.innerText = "$ " + newTotal.toFixed(2);
+            rowTotalTd.setAttribute('data-value', newTotal);
+
+            let grandTotal = 0;
+            document.querySelectorAll('.row-total').forEach(td => {
+                grandTotal += parseFloat(td.getAttribute('data-value')) || 0;
+            });
+            document.getElementById('grandTotalText').innerText = "$ " + grandTotal.toFixed(2);
+        }
+    </script>
+
+    <style>
+        @media print {
+            .sidebar, .top-header, .invoice-toolbar { display: none !important; }
+            .main-content { padding: 0 !important; overflow: visible !important; background:#fff; }
+            .app-container { overflow: visible !important; padding: 0; }
+            .invoice-card { border: none; box-shadow: none; margin: 0; padding: 0; width: 100%; max-width: 100%; display:block;}
+            .editable-input, .rate-input { border: none !important; background: transparent !important; padding: 0 !important; outline: none !important;}
+            .editable-input::placeholder { color: transparent; } 
+            input[type="date"]::-webkit-calendar-picker-indicator { display: none; } 
+        }
+    </style>
+</body>
+</html>

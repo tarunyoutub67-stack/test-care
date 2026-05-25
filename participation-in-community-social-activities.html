@@ -1,0 +1,363 @@
+<!DOCTYPE html>
+<html lang="en-AU">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0">
+    
+    <title>Community & Social Activities | Cure And Care - NDIS Provider NSW</title>
+    <meta name="description" content="Engage meaningfully with your community in NSW. Cure and Care offers inclusive NDIS social activity programs across Orange to build confidence and belonging.">
+    <meta name="keywords" content="NDIS Community Participation NSW, Social Activities NDIS Orange, Disability Socialisation New South Wales, Cure and Care Community Support">
+    <link rel="canonical" href="https://cureandcare.com.au/participation-in-community-social-activities.html" />
+    
+    <script type="application/ld+json">
+    {
+      "@context": "https://schema.org",
+      "@type": "Service",
+      "serviceType": "Participation in Community and Social Activities",
+      "provider": {
+        "@type": "MedicalBusiness",
+        "name": "Cure And Care",
+        "address": {
+          "@type": "PostalAddress",
+          "addressRegion": "NSW",
+          "addressCountry": "AU"
+        }
+      }
+    }
+    </script>
+
+    <link rel="icon" href="logon.png?v=3" sizes="32x32" />
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&family=Urbanist:wght@700;900&display=swap" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+
+    <style>
+        :root {
+            --primary: #0f172a; 
+            --secondary: #10b981; 
+            --accent: #38bdf8; 
+            --gradient: linear-gradient(135deg, #38bdf8 0%, #10b981 100%);
+            --glass: rgba(255, 255, 255, 0.9);
+        }
+
+        body { 
+            font-family: 'Plus Jakarta Sans', sans-serif; 
+            color: #334155; 
+            background: #fff;
+            margin: 0;
+            overflow-x: hidden;
+            border: 10px solid transparent; 
+            border-image: var(--gradient) 1;
+            -webkit-font-smoothing: antialiased;
+        }
+
+        /* 1. FAST SPLASH */
+        #splash { position: fixed; inset: 0; background: #fff; display: flex; align-items: center; justify-content: center; z-index: 100000; transition: 0.5s ease; }
+        .splash-logo { max-width: 180px; animation: scaleUp 1.5s ease-in-out infinite; }
+        @keyframes scaleUp { 0%, 100% { transform: scale(1); } 50% { transform: scale(1.05); } }
+
+        /* 2. TOP BAR */
+        #top-bar { background: var(--primary); padding: 10px 0; font-size: 13px; color: #fff; border-bottom: 1px solid rgba(255,255,255,0.1); }
+        #top-bar a { color: #fff; text-decoration: none; transition: 0.3s; font-weight: 500; }
+        #top-bar a:hover { color: var(--accent); }
+        .social-link img { width: 18px; filter: invert(1); transition: 0.3s; margin-left: 15px; }
+        .social-link:hover img { transform: scale(1.2); filter: invert(0.5) sepia(1) saturate(5) hue-rotate(175deg); }
+
+        /* 3. PREMIUM NAVBAR */
+        .navbar { background: var(--glass); backdrop-filter: blur(20px); padding: 15px 0; border-bottom: 1px solid rgba(0,0,0,0.05); }
+        .navbar-brand img { height: 55px; }
+        .nav-link { font-weight: 700; color: var(--primary) !important; font-size: 14.5px; margin: 0 12px; transition: 0.3s; }
+        .nav-link:hover, .nav-link.active { color: var(--secondary) !important; }
+        .btn-nav { background: var(--gradient); color: #fff !important; border-radius: 14px; padding: 10px 24px; font-weight: 800; border: none; }
+
+        /* 4. PAGE HEADER */
+        .page-header { background: var(--primary); padding: 80px 0; text-align: center; color: #fff; position: relative; overflow: hidden; }
+        .page-title { font-family: 'Urbanist', sans-serif; font-weight: 900; font-size: 42px; margin-bottom: 10px; position: relative; z-index: 2; }
+        .page-breadcrumb { font-size: 14px; font-weight: 600; opacity: 0.8; position: relative; z-index: 2; }
+        .page-breadcrumb a { color: var(--accent); text-decoration: none; }
+        .bg-shape { position: absolute; top: -50px; right: -50px; width: 300px; height: 300px; background: var(--gradient); border-radius: 50%; opacity: 0.1; filter: blur(40px); z-index: 1; }
+
+        /* 5. SERVICE CONTENT */
+        .section-padding { padding: 90px 0; }
+        .bg-light-v2 { background-color: #f8fafc; border-top: 1px solid #f1f5f9; border-bottom: 1px solid #f1f5f9; }
+        .head-subtitle { color: var(--secondary); text-transform: uppercase; font-weight: 800; letter-spacing: 2px; font-size: 12px; display: block; margin-bottom: 15px; }
+        .section-heading { font-family: 'Urbanist', sans-serif; font-weight: 900; font-size: calc(28px + 1vw); color: var(--primary); line-height: 1.2; margin-bottom: 25px; }
+        .section-heading span { background: var(--gradient); -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
+        .ptxt { font-size: 16px; color: #475569; line-height: 1.8; font-weight: 400; margin-bottom: 20px; }
+
+        /* 6. ABOUT IMAGE PREMIUM DESIGN */
+        .about-img-container { position: relative; padding: 30px; z-index: 1; }
+        .main-about-img { width: 100%; height: auto; border-radius: 35px; position: relative; z-index: 2; box-shadow: 0 25px 60px rgba(0,0,0,0.1); border: 10px solid #fff; }
+        .about-dots-pattern { position: absolute; top: 0; left: 0; width: 150px; height: 150px; z-index: 0; background-image: radial-gradient(var(--accent) 2px, transparent 2px); background-size: 15px 15px; opacity: 0.5; border-radius: 20px; }
+        .about-blue-ring { position: absolute; bottom: 0; right: 0; width: 180px; height: 180px; border: 12px solid var(--secondary); border-radius: 50%; z-index: 0; transform: translate(15%, 15%); opacity: 0.8; }
+
+        /* PILL DESIGN FOR BULLETS */
+        .choose-pill { background: #fff; border-radius: 50px; padding: 12px 25px; margin-bottom: 15px; display: flex; align-items: center; box-shadow: 0 10px 30px rgba(0,0,0,0.04); font-weight: 700; font-size: 15px; color: var(--primary); transition: 0.3s; border: 1px solid #f8fafc; }
+        .choose-pill:hover { transform: translateX(10px); border-color: var(--accent); }
+        .choose-icon { width: 28px; height: 28px; background: var(--accent); color: #fff; border-radius: 50%; display: flex; align-items: center; justify-content: center; margin-right: 18px; font-size: 14px; font-weight: bold; }
+
+        /* CTA BOX DESIGN */
+        .cta-box { background: var(--primary); border-radius: 25px; padding: 35px; color: #fff; box-shadow: 0 15px 40px rgba(0,0,0,0.1); border-left: 6px solid var(--secondary); margin-top: 20px; }
+        .cta-box h6 { font-family: 'Urbanist', sans-serif; font-size: 22px; font-weight: 800; margin-bottom: 15px; }
+
+        /* 7. COMPACT FOOTER */
+        .site-footer { background: #0b0f1a; color: #fff; padding: 60px 0 20px; }
+        .foot-head { color: var(--accent); font-family: 'Urbanist', sans-serif; font-weight: 800; font-size: 16px; margin-bottom: 20px; text-transform: uppercase; }
+        .f-item { margin-bottom: 10px; font-size: 13.5px; opacity: 0.7; transition: 0.3s; cursor: pointer; display: flex; align-items: center; }
+        .f-item:hover { color: var(--secondary); transform: translateX(5px); opacity: 1; }
+        .f-circle { width: 28px; height: 28px; background: rgba(56, 189, 248, 0.1); border: 1px solid var(--accent); border-radius: 50%; display: inline-flex; align-items: center; justify-content: center; margin-right: 10px; color: var(--accent); font-size: 12px; }
+        .ndis-logo { max-width: 130px; margin-top: 10px; background: #fff; padding: 8px; border-radius: 10px; }
+
+        /* 8. SMART AI CHATBOT & WA WIDGET */
+        #ai-wrap { position: fixed; bottom: 25px; right: 25px; z-index: 10001; }
+        #ai-btn { width: 65px; height: 65px; background: var(--primary); border-radius: 20px; display: flex; align-items: center; justify-content: center; cursor: pointer; box-shadow: 0 10px 30px rgba(0,0,0,0.3); transition: 0.3s; border: 2px solid rgba(255,255,255,0.1); }
+        #ai-btn img { filter: invert(1); width: 30px; }
+        #ai-box { position: absolute; bottom: 80px; right: 0; width: 320px; background: #fff; border-radius: 25px; box-shadow: 0 20px 60px rgba(0,0,0,0.2); display: none; overflow: hidden; border: 1px solid #f1f5f9; }
+        .ai-header { background: var(--primary); color: #fff; padding: 18px; font-weight: 800; font-family: 'Urbanist', sans-serif; display: flex; justify-content: space-between; align-items: center; }
+        .ai-body { height: 350px; padding: 20px; overflow-y: auto; background: #fcfdfe; display: flex; flex-direction: column; }
+        .ai-msg { background: #f1f5f9; padding: 12px 16px; border-radius: 18px; font-size: 13px; margin-bottom: 12px; line-height: 1.4; color: #334155; }
+        .ai-reply { background: var(--secondary); color: #fff; align-self: flex-end; padding: 10px 15px; border-radius: 18px; font-size: 13px; margin-bottom: 12px; font-weight: 600; }
+        .ai-opt-btn { background: #fff; border: 1.5px solid var(--accent); padding: 10px; border-radius: 12px; font-size: 12px; font-weight: 700; cursor: pointer; margin-bottom: 8px; width: 100%; text-align: left; color: var(--accent); transition: 0.2s; }
+        .ai-opt-btn:hover { background: var(--accent); color: #fff; }
+
+        .cc-widget-btn { position: fixed; bottom: 105px; right: 25px; width: 55px; height: 55px; border-radius: 20px; display: flex; justify-content: center; align-items: center; cursor: pointer; transition: all 0.3s; z-index: 10000; box-shadow: 0 10px 25px rgba(37, 211, 102, 0.4); background: #25d366; }
+        .cc-widget-btn:hover { transform: translateY(-5px); }
+        .cc-widget-btn svg { width: 30px; height: 30px; fill: #fff; }
+
+        @media (max-width: 768px) { .section-heading { font-size: 32px; } .about-img-container { margin-bottom: 40px; } }
+    </style>
+</head>
+<body>
+
+<div id="splash"><div class="text-center"><img src="logon.png" class="splash-logo"><div style="width:40px; height:4px; background:var(--gradient); margin:15px auto; border-radius:10px;"></div></div></div>
+
+<div id="top-bar">
+    <div class="container d-flex justify-content-between align-items-center">
+        <div class="d-flex gap-4">
+            <div><a href="tel:0422721800">📞 0422 721 800</a></div>
+            <div class="d-none d-sm-block"><a href="mailto:admin@cureandcare.com.au">✉️ admin@cureandcare.com.au</a></div>
+        </div>
+        <div class="d-flex align-items-center">
+            <span class="d-none d-md-inline opacity-75">Follow Us: </span>
+            <a href="#" class="social-link"><img src="https://cdn-icons-png.flaticon.com/512/733/733547.png" alt="Facebook"></a>
+            <a href="#" class="social-link"><img src="https://cdn-icons-png.flaticon.com/512/2111/2111463.png" alt="Instagram"></a>
+        </div>
+    </div>
+</div>
+
+<nav class="navbar navbar-expand-lg sticky-top">
+    <div class="container">
+        <a class="navbar-brand" href="index.html"><img src="logon.png" alt="Cure and Care"></a>
+        <button class="navbar-toggler border-0" type="button" data-bs-toggle="collapse" data-bs-target="#mainNav"><span class="navbar-toggler-icon"></span></button>
+        <div class="collapse navbar-collapse" id="mainNav">
+            <ul class="navbar-nav mx-auto">
+                <li class="nav-item"><a class="nav-link" href="index.html">Home</a></li>
+                <li class="nav-item"><a class="nav-link" href="about-us.html">About us</a></li>
+                <li class="nav-item"><a class="nav-link" href="https://www.ndis.gov.au/" target="_blank">NDIS</a></li>
+                <li class="nav-item"><a class="nav-link" href="career.html">Career</a></li>
+                
+                <li class="nav-item dropdown">
+                    <a class="nav-link dropdown-toggle active" href="#" data-bs-toggle="dropdown">Services</a>
+                    <ul class="dropdown-menu border-0 shadow-lg p-3">
+                        <li><a class="dropdown-item py-2 fw-bold" href="assist-travel-transport.html">Assist Travel Transport</a></li>
+                        <li><a class="dropdown-item py-2 fw-bold" href="capacity-building.html">Capacity Building</a></li>
+                        <li><a class="dropdown-item py-2 fw-bold" href="daily-personal-activities.html">Daily Personal Activities</a></li>
+                        <li><a class="dropdown-item py-2 fw-bold" href="in-home-support.html">In Home support</a></li>
+                        <li><a class="dropdown-item py-2 fw-bold" href="participation-in-community-social-activities.html" style="color: var(--secondary);">Participation In Community & Social Activities</a></li>
+                        <li><a class="dropdown-item py-2 fw-bold" href="supported-accommodation-sil.html">Supported Accommodation (SIL)</a></li>
+                    </ul>
+                </li>
+
+                <li class="nav-item"><a class="nav-link" href="contact-us.html">Contact</a></li>
+            </ul>
+            <a href="referral.html" class="btn-nav shadow-sm">Referral Support</a>
+        </div>
+    </div>
+</nav>
+
+<div class="page-header">
+    <div class="bg-shape"></div>
+    <div class="container">
+        <h1 class="page-title">Community Participation</h1>
+        <div class="page-breadcrumb">
+            <a href="index.html">Home</a> <span class="mx-2 opacity-50">/</span> Services <span class="mx-2 opacity-50">/</span> Community & Social
+        </div>
+    </div>
+</div>
+
+<main>
+    <section class="section-padding">
+        <div class="container">
+            <div class="row align-items-center">
+                <div class="col-lg-5 order-2 order-lg-1">
+                    <div class="about-img-container">
+                        <div class="about-dots-pattern"></div>
+                        <img src="finas-inr-img-8.jpg" class="main-about-img" alt="Community Participation NSW">
+                        <div class="about-blue-ring"></div>
+                    </div>
+                </div>
+                <div class="col-lg-7 ps-lg-5 order-1 order-lg-2 mb-5 mb-lg-0">
+                    <span class="head-subtitle">get connected</span>
+                    <h2 class="section-heading">Participation in Community & Social Activities <span>in NSW</span></h2>
+                    <div class="ptxt">Are you looking for experts who can help you participate in community and social activities in <strong>New South Wales (NSW)</strong>? Cure and Care is your premier destination. We believe in encouraging a sense of belonging and empowerment for people through active social participation.</div>
+                    <div class="ptxt">Our team is dedicated to helping you engage meaningfully with the world around you, ensuring you lead a fulfilling and connected life across Orange and surrounding regions.</div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <section class="section-padding bg-light-v2">
+        <div class="container">
+            <div class="row align-items-center flex-lg-row-reverse">
+                <div class="col-lg-5 order-2 order-lg-1">
+                    <div class="about-img-container">
+                        <div class="about-dots-pattern" style="background-image: radial-gradient(var(--secondary) 2px, transparent 2px);"></div>
+                        <img src="finas-img-32.jpg" class="main-about-img" alt="Socialisation NSW">
+                        <div class="about-blue-ring" style="border-color: var(--accent);"></div>
+                    </div>
+                </div>
+                <div class="col-lg-7 pe-lg-5 order-1 order-lg-2 mb-5 mb-lg-0">
+                    <span class="head-subtitle">social inclusion</span>
+                    <h2 class="section-heading">Special Programs to <span>Promote Socialisation</span></h2>
+                    <div class="ptxt"><strong>Inclusive Programming:</strong> We offer a diverse range of activities that cater to the unique needs and abilities of neurodiverse groups. Our programs are inclusive and accessible to all.</div>
+                    <div class="ptxt"><strong>Skill Development:</strong> Our activities are fun and engaging while offering opportunities for growth. Whether you want to enhance communication or build confidence, we are here to help.</div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <section class="section-padding">
+        <div class="container">
+            <div class="row align-items-center">
+                <div class="col-lg-5 order-2 order-lg-1">
+                    <div class="about-img-container">
+                        <div class="about-dots-pattern"></div>
+                        <img src="finas-inr-img-31.jpg" class="main-about-img" alt="Trusted NDIS Support">
+                        <div class="about-blue-ring"></div>
+                    </div>
+                </div>
+                <div class="col-lg-7 ps-lg-5 order-1 order-lg-2 mb-5 mb-lg-0">
+                    <span class="head-subtitle">WHY CHOOSE US</span>
+                    <h2 class="section-heading">Why <span>Choose</span> Us?</h2>
+                    
+                    <div class="mt-4">
+                        <div class="choose-pill"><div class="choose-icon">✓</div> <strong>Experience:</strong> Years of expertise in implementing special programs.</div>
+                        <div class="choose-pill"><div class="choose-icon">✓</div> <strong>Person-Centred Approach:</strong> Tailored to the interests of each participant.</div>
+                        <div class="choose-pill"><div class="choose-icon">✓</div> <strong>Qualified Staff:</strong> Trained professionals passionate about making a difference.</div>
+                    </div>
+                    
+                    <div class="cta-box">
+                        <h6>Reach Out to Us Today!</h6>
+                        <p class="mb-4 opacity-75 small">Contact us today to learn more about our programs and how we can help you lead a connected life across NSW.</p>
+                        <a href="contact-us.html" class="btn-nav d-inline-block border-0 bg-white" style="color: var(--primary) !important; font-size: 15px;">Contact Us Now</a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+</main>
+
+<footer class="site-footer">
+    <div class="container">
+        <div class="row">
+            <div class="col-lg-3 col-md-6 mb-4 text-center text-lg-start">
+                <img src="logon.png" width="140" class="mb-3 bg-white p-2 rounded-4 shadow-sm">
+                <p class="foot-text pe-md-3 opacity-75 small">When it comes to providing NDIS support to participants, we always consider their needs. We create individual plans to make our support services more effective and ensure that the individuals reach their goals. Furthermore, we provide a wide range of services in NSW which makes us one of the most preferred organisations around.</p>
+                <img src="ndis-stamp.png" class="ndis-logo" alt="NDIS">
+            </div>
+            <div class="col-lg-2 col-md-6 mb-4 ms-lg-auto">
+                <div class="foot-head">Explore</div>
+                <div class="f-item" onclick="location.href='index.html'">Home</div>
+                <div class="f-item" onclick="location.href='about-us.html'">About us</div>
+                <div class="f-item" onclick="window.open('https://www.ndis.gov.au/', '_blank')">NDIS Site</div>
+            </div>
+            <div class="col-lg-3 col-md-6 mb-4">
+                <div class="foot-head">Contact</div>
+                <div class="f-item"><span class="f-circle">📞</span> 0422 721 800</div>
+                <div class="f-item"><span class="f-circle">✉️</span> admin@cureandcare.com.au</div>
+                <div class="f-item"><span class="f-circle">📍</span> Orange, NSW 2800</div>
+            </div>
+            <div class="col-lg-3 col-md-6 mb-4 text-center text-md-start">
+                <div class="foot-head">Social</div>
+                <div class="d-flex justify-content-center justify-content-md-start">
+                    <a href="#" class="social-link ms-0 me-3"><img src="https://cdn-icons-png.flaticon.com/512/733/733547.png" alt="FB"></a>
+                    <a href="#" class="social-link ms-0"><img src="https://cdn-icons-png.flaticon.com/512/2111/2111463.png" alt="IG"></a>
+                </div>
+            </div>
+        </div>
+        <div class="text-center pt-4 mt-2 border-top border-secondary" style="font-size: 11px; opacity:0.5;">
+            Copyright © 2026 cure and care Designed by <a href="https://skywebsolutions.in" target="_blank" style="color:var(--accent); text-decoration:none; font-weight:800;">skywebsolutions.in</a>
+        </div>
+    </div>
+</footer>
+
+<div id="ai-wrap">
+    <div id="ai-box">
+        <div class="ai-header">
+            <span>CureCare AI Assistant ✨</span>
+            <span style="cursor:pointer" onclick="toggleAI()">✕</span>
+        </div>
+        <div class="ai-body" id="aib">
+            <div class="ai-msg">Hello! I am CureCare AI. How can I help you with NDIS support in NSW today?</div>
+            <div id="ai-options">
+                <button class="ai-opt-btn" onclick="aiReply('NSW Services')">What services do you offer?</button>
+                <button class="ai-opt-btn" onclick="aiReply('Reg')">Are you NDIS Registered?</button>
+                <button class="ai-opt-btn" onclick="aiReply('Loc')">Which locations do you serve?</button>
+                <button class="ai-opt-btn" onclick="aiReply('Cont')">I want to speak to an expert</button>
+            </div>
+        </div>
+    </div>
+    <div id="ai-btn" onclick="toggleAI()">
+        <img src="https://cdn-icons-png.flaticon.com/512/2040/2040946.png" alt="Chat">
+    </div>
+</div>
+
+<audio id="chatSound" src="https://assets.mixkit.co/active_storage/sfx/2354/2354-preview.mp3"></audio>
+
+<a href="https://wa.me/61422721800" class="cc-widget-btn" target="_blank">
+    <svg viewBox="0 0 24 24"><path d="M20.52 3.44A11.96 11.96 0 0 0 12 0a12 12 0 0 0-10.27 18.2L0 24l5.97-1.56A11.95 11.95 0 0 0 12 24c6.62 0 12-5.38 12-12 0-3.2-1.25-6.22-3.48-8.56zM12 22a9.96 9.96 0 0 1-5.1-1.4l-.36-.22-3.8.99 1.01-3.7-.23-.37A9.95 9.95 0 0 1 2 12c0-5.51 4.49-10 10-10s10 4.49 10 10-4.49 10-10 10zm5.46-7.46c-.3-.15-1.76-.87-2.03-.97-.27-.1-.47-.15-.67.15-.2.3-.77.97-.94 1.17-.18.2-.35.23-.65.08-.3-.15-1.26-.46-2.4-1.48-.88-.8-1.47-1.78-1.64-2.08-.18-.3-.02-.46.13-.61.14-.14.3-.35.45-.52.15-.18.2-.3.3-.5.1-.2.05-.38-.03-.53-.08-.15-.67-1.62-.92-2.22-.24-.58-.48-.5-.67-.5h-.57c-.2 0-.52.08-.8.38-.27.3-1.04 1.02-1.04 2.48s1.07 2.87 1.22 3.07c.15.2 2.1 3.2 5.08 4.5.71.3 1.27.48 1.7.62.71.22 1.36.19 1.87.12.57-.08 1.76-.72 2.01-1.42.25-.7.25-1.3.18-1.42-.08-.13-.28-.2-.58-.35z"/></svg>
+</a>
+
+<script>
+    function hideSplash() { const s = document.getElementById('splash'); if(s) { s.style.opacity='0'; setTimeout(()=> s.style.display='none', 600); } }
+    window.addEventListener('load', () => setTimeout(hideSplash, 1000));
+    setTimeout(hideSplash, 3500); 
+
+    function toggleAI() {
+        const b = document.getElementById('ai-box');
+        const sound = document.getElementById('chatSound');
+        if (b.style.display !== 'block') {
+            sound.play().catch(e => console.log("Sound enabled after interaction"));
+        }
+        b.style.display = (b.style.display === 'block') ? 'none' : 'block';
+    }
+
+    function aiReply(userQuery) {
+        const chatBody = document.getElementById('aib');
+        const sound = document.getElementById('chatSound');
+        const userDiv = document.createElement('div');
+        userDiv.className = "ai-reply";
+        userDiv.innerText = userQuery;
+        chatBody.appendChild(userDiv);
+
+        let botResponse = "";
+        if(userQuery === 'NSW Services') botResponse = "We offer SIL, Travel Transport, In-Home Support, and Capacity Building across NSW.";
+        else if(userQuery === 'Reg') botResponse = "Cure and Care is a fully registered NDIS service provider ensuring high-quality care standards.";
+        else if(userQuery === 'Loc') botResponse = "We primarily serve Orange, NSW 2800 and the entire New South Wales region.";
+        else if(userQuery === 'Cont') botResponse = "Please call our NSW expert at 0422 721 800 or email admin@cureandcare.com.au";
+
+        setTimeout(() => {
+            sound.play().catch(e => {});
+            const botDiv = document.createElement('div');
+            botDiv.className = "ai-msg";
+            botDiv.style.background = "#f0fdf4";
+            botDiv.style.fontWeight = "600";
+            botDiv.innerHTML = "<b>CureCare AI:</b> " + botResponse;
+            chatBody.appendChild(botDiv);
+            chatBody.scrollTop = chatBody.scrollHeight;
+        }, 500);
+    }
+</script>
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+</html>

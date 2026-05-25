@@ -1,0 +1,206 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Send Roster | CureAndCare CRM</title>
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    
+    <style>
+        :root { --primary: #0f172a; --secondary: #10b981; --accent: #38bdf8; --bg-body: #f8fafc; --text-main: #334155; }
+        * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Plus Jakarta Sans', sans-serif; }
+        body { background: var(--bg-body); color: var(--text-main); display: flex; height: 100vh; overflow: hidden; }
+        
+        /* SIDEBAR */
+        .sidebar { width: 260px; background: var(--primary); color: #fff; display: flex; flex-direction: column; z-index: 100; }
+        .brand { padding: 20px; display: flex; align-items: center; gap: 12px; border-bottom: 1px solid rgba(255,255,255,0.05); height: 70px; }
+        .brand img { height: 35px; background: #fff; padding: 3px; border-radius: 8px; }
+        .brand span { font-weight: 800; font-size: 18px; letter-spacing: 0.5px; }
+        .nav-menu { padding: 20px 0; flex: 1; overflow-y: auto; }
+        .nav-item { padding: 12px 25px; display: flex; align-items: center; gap: 15px; color: #cbd5e1; text-decoration: none; font-weight: 600; font-size: 14.5px; border-left: 4px solid transparent; }
+        .nav-item:hover, .nav-item.active { background: rgba(255,255,255,0.05); color: #fff; border-left-color: var(--secondary); }
+        .sidebar-footer { padding: 20px; border-top: 1px solid rgba(255,255,255,0.05); }
+        .logout-btn { width: 100%; padding: 10px; background: rgba(239, 68, 68, 0.1); color: #ef4444; border: 1px solid rgba(239, 68, 68, 0.2); border-radius: 8px; font-weight: 700; cursor: pointer; display: flex; justify-content: center; align-items: center; gap: 8px; }
+        
+        /* MAIN CONTENT */
+        .main-wrapper { flex: 1; display: flex; flex-direction: column; overflow: hidden; }
+        .topbar { height: 70px; background: #fff; padding: 0 30px; display: flex; justify-content: flex-end; align-items: center; border-bottom: 1px solid #e2e8f0; }
+        .user-profile { display: flex; align-items: center; gap: 10px; padding-left: 15px; border-left: 1px solid #e2e8f0; }
+        .user-avatar { width: 35px; height: 35px; border-radius: 50%; background: var(--secondary); display: flex; justify-content: center; align-items: center; color: #fff; font-weight: bold; }
+        .user-name { font-weight: 700; font-size: 14px; color: var(--primary); display: block; }
+        .user-role { font-size: 11px; color: #64748b; text-transform: uppercase; font-weight: 600;}
+        
+        .content { padding: 30px; overflow-y: auto; flex: 1; }
+        .page-header { margin-bottom: 25px; }
+        .page-header h1 { font-size: 24px; font-weight: 800; color: var(--primary); }
+        .page-header p { font-size: 14px; color: #64748b; margin-top: 5px; }
+
+        /* ROSTER EMAIL FORM */
+        .roster-card { background: #fff; padding: 30px; border-radius: 16px; border: 1px solid #e2e8f0; max-width: 800px; box-shadow: 0 10px 25px rgba(0,0,0,0.02); }
+        
+        /* 🚀 BULLETPROOF SECURITY: FORM IS HIDDEN BY DEFAULT */
+        #rosterFormContainer { display: none; }
+        #accessRestrictedContainer { display: none; text-align: center; padding: 40px 20px; background: #fff; border-radius: 16px; border: 1px solid #fee2e2; max-width: 600px; }
+        
+        .input-group { margin-bottom: 20px; }
+        .input-group label { display: block; font-weight: 700; font-size: 13px; color: var(--primary); margin-bottom: 8px; }
+        .input-group input, .input-group textarea { width: 100%; padding: 12px 15px; border: 1px solid #cbd5e1; border-radius: 10px; font-size: 14px; transition: 0.3s; font-family: inherit; }
+        .input-group input:focus, .input-group textarea:focus { outline: none; border-color: var(--accent); box-shadow: 0 0 0 3px rgba(56, 189, 248, 0.1); }
+        .email-badges { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 10px; }
+        .email-badge { background: #f1f5f9; padding: 5px 12px; border-radius: 20px; font-size: 12px; font-weight: 600; color: #475569; border: 1px solid #e2e8f0; }
+        
+        .btn-send { background: var(--secondary); color: #fff; border: none; padding: 14px 24px; border-radius: 10px; font-weight: 700; font-size: 15px; cursor: pointer; transition: 0.3s; display: flex; align-items: center; gap: 10px; width: 100%; justify-content: center; }
+        .btn-send:hover { background: #059669; transform: translateY(-2px); box-shadow: 0 8px 15px rgba(16, 185, 129, 0.2); }
+
+        #successModal { display: none; background: #dcfce3; color: #065f46; padding: 20px; border-radius: 12px; margin-top: 20px; border: 1px solid #a7f3d0; text-align: center; font-weight: 600; animation: fadeIn 0.5s; }
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(-10px); } to { opacity: 1; transform: translateY(0); } }
+    </style>
+</head>
+<body>
+
+    <aside class="sidebar">
+        <div class="brand"><img src="logon.png" alt="Logo" onerror="this.src='https://cdn-icons-png.flaticon.com/512/2966/2966327.png'"><span>CureAndCare</span></div>
+        <nav class="nav-menu" id="sidebarMenu">
+            <!-- Sidebar injected by JS -->
+        </nav>
+        <div class="sidebar-footer">
+            <button class="logout-btn" onclick="handleLogout()"><i class="fas fa-sign-out-alt"></i> Logout</button>
+        </div>
+    </aside>
+
+    <div class="main-wrapper">
+        <header class="topbar">
+            <div class="user-profile">
+                <div class="user-avatar" id="userInitial">S</div>
+                <div>
+                    <span class="user-name" id="userName">Staff User</span>
+                    <span class="user-role" id="userRole">ROLE</span>
+                </div>
+            </div>
+        </header>
+
+        <main class="content">
+            <div class="page-header" id="dynamicPageHeader">
+                <h1><i class="fas fa-paper-plane" style="color: var(--secondary);"></i> Publish & Email Roster</h1>
+                <p>Generate shifts and instantly notify staff members via their registered emails.</p>
+            </div>
+
+            <!-- ADMIN / MANAGER FORM (Hidden by default) -->
+            <div class="roster-card" id="rosterFormContainer">
+                <form id="rosterForm">
+                    <div class="input-group">
+                        <label>Select Roster Week</label>
+                        <input type="week" id="rosterWeek" required>
+                    </div>
+
+                    <div class="input-group">
+                        <label>Staff Email IDs (Separate with commas)</label>
+                        <textarea id="emailList" rows="3" placeholder="e.g. john@cureandcare.com.au, rahul@gmail.com" required></textarea>
+                        <div class="email-badges" id="emailBadgesPreview"></div>
+                    </div>
+
+                    <div class="input-group">
+                        <label>Additional Instructions (Optional)</label>
+                        <textarea rows="2" placeholder="e.g. Please check your weekend shifts carefully."></textarea>
+                    </div>
+
+                    <button type="submit" class="btn-send" id="sendBtn"><i class="fas fa-envelope-open-text"></i> Send Roster Emails</button>
+                </form>
+
+                <div id="successModal">
+                    <i class="fas fa-check-circle" style="font-size: 24px; display: block; margin-bottom: 10px;"></i>
+                    Roster successfully generated and emails dispatched to all selected staff!
+                </div>
+            </div>
+
+            <!-- STAFF RESTRICTED MESSAGE (Hidden by default) -->
+            <div id="accessRestrictedContainer">
+                <i class="fas fa-lock" style="font-size: 40px; color: #ef4444; margin-bottom: 15px;"></i>
+                <h2 style="color: #1e293b; margin-bottom: 10px;">Access Restricted</h2>
+                <p style="color: #64748b; margin-bottom: 20px;">You have view-only access to the roster. You do not have permission to publish or send roster emails.</p>
+                <a href="crm.html" style="display:inline-block; background: var(--secondary); color: white; padding: 12px 24px; text-decoration: none; border-radius: 8px; font-weight: bold;"><i class="fas fa-calendar-alt"></i> Go to My Shift Calendar</a>
+            </div>
+        </main>
+    </div>
+
+    <script>
+        // 1. CHECK LOGIN
+        const currentUser = JSON.parse(localStorage.getItem('currentUser'));
+        if (!currentUser) { window.location.href = 'crm-login.html'; }
+        
+        // Clean the role string (makes it lowercase and removes spaces)
+        const userRole = (currentUser.role || '').toLowerCase().trim();
+        
+        document.getElementById('userName').innerText = currentUser.name || currentUser.username;
+        document.getElementById('userRole').innerText = userRole.toUpperCase();
+        document.getElementById('userInitial').innerText = (currentUser.name || currentUser.username).charAt(0).toUpperCase();
+
+        const sidebar = document.getElementById('sidebarMenu');
+        
+        // 2. CHECK PERMISSIONS & RENDER UI
+        if (userRole === 'admin' || userRole === 'manager') {
+            // SHOW ADMIN FORM
+            document.getElementById('rosterFormContainer').style.display = 'block';
+            
+            sidebar.innerHTML = `
+                <a href="crm-home.html" class="nav-item"><i class="fas fa-th-large"></i> Dashboard</a>
+                <a href="crm-chat.html" class="nav-item" style="color: #38bdf8;"><i class="fas fa-comments"></i> Team Chat <span style="background:#ef4444; color:#fff; font-size:9px; padding:2px 5px; border-radius:10px; margin-left:auto;">LIVE</span></a>
+                <a href="crm.html" class="nav-item"><i class="far fa-calendar-alt"></i> View Shift Calendar</a>
+                <a href="crm-roster.html" class="nav-item active"><i class="fas fa-paper-plane"></i> Send Rosters</a>
+            `;
+        } else {
+            // SHOW STAFF RESTRICTED MESSAGE
+            document.getElementById('accessRestrictedContainer').style.display = 'block';
+            document.getElementById('dynamicPageHeader').style.display = 'none'; // Hide the page title too
+            
+            sidebar.innerHTML = `
+                <a href="crm-home.html" class="nav-item"><i class="fas fa-home"></i> Home</a>
+                <a href="crm-chat.html" class="nav-item" style="color: #38bdf8;"><i class="fas fa-comments"></i> Team Chat <span style="background:#ef4444; color:#fff; font-size:9px; padding:2px 5px; border-radius:10px; margin-left:auto;">LIVE</span></a>
+                <a href="crm.html" class="nav-item"><i class="far fa-calendar-alt"></i> My Shift Calendar</a>
+            `;
+        }
+
+        // 3. FAKE EMAIL SENDING LOGIC (Only works if form is visible)
+        document.getElementById('emailList').addEventListener('input', function(e) {
+            const emails = e.target.value.split(',').filter(em => em.trim() !== '');
+            const badgeContainer = document.getElementById('emailBadgesPreview');
+            badgeContainer.innerHTML = '';
+            emails.forEach(email => {
+                badgeContainer.innerHTML += `<span class="email-badge"><i class="fas fa-user-check" style="color:var(--secondary); margin-right:4px;"></i> ${email.trim()}</span>`;
+            });
+        });
+
+        document.getElementById('rosterForm').addEventListener('submit', function(e) {
+            e.preventDefault();
+            const btn = document.getElementById('sendBtn');
+            const modal = document.getElementById('successModal');
+            
+            btn.innerHTML = '<i class="fas fa-circle-notch fa-spin"></i> Connecting to Mail Server...';
+            btn.style.opacity = '0.8';
+            btn.disabled = true;
+
+            setTimeout(() => {
+                btn.innerHTML = '<i class="fas fa-check"></i> Emails Sent Successfully';
+                btn.style.background = '#10b981';
+                modal.style.display = 'block';
+                
+                setTimeout(() => {
+                    btn.innerHTML = '<i class="fas fa-envelope-open-text"></i> Send Roster Emails';
+                    btn.style.background = 'var(--secondary)';
+                    btn.style.opacity = '1';
+                    btn.disabled = false;
+                    modal.style.display = 'none';
+                    document.getElementById('rosterForm').reset();
+                    document.getElementById('emailBadgesPreview').innerHTML = '';
+                }, 4000);
+            }, 2000);
+        });
+
+        function handleLogout() {
+            localStorage.removeItem('currentUser');
+            window.location.href = 'crm-login.html';
+        }
+    </script>
+</body>
+</html>
