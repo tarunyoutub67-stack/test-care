@@ -12,7 +12,6 @@
         * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Plus Jakarta Sans', sans-serif; }
         body { background: var(--bg-body); color: var(--text-main); display: flex; height: 100vh; overflow: hidden; }
         
-        /* SIDEBAR */
         .sidebar { width: 260px; background: var(--primary); color: #fff; display: flex; flex-direction: column; z-index: 100; }
         .brand { padding: 20px; display: flex; align-items: center; gap: 12px; border-bottom: 1px solid rgba(255,255,255,0.05); height: 70px; }
         .brand img { height: 35px; background: #fff; padding: 3px; border-radius: 8px; }
@@ -23,7 +22,6 @@
         .sidebar-footer { padding: 20px; border-top: 1px solid rgba(255,255,255,0.05); }
         .logout-btn { width: 100%; padding: 10px; background: rgba(239, 68, 68, 0.1); color: #ef4444; border: 1px solid rgba(239, 68, 68, 0.2); border-radius: 8px; font-weight: 700; cursor: pointer; display: flex; justify-content: center; align-items: center; gap: 8px; }
         
-        /* MAIN CONTENT */
         .main-wrapper { flex: 1; display: flex; flex-direction: column; overflow: hidden; }
         .topbar { height: 70px; background: #fff; padding: 0 30px; display: flex; justify-content: flex-end; align-items: center; border-bottom: 1px solid #e2e8f0; }
         .user-profile { display: flex; align-items: center; gap: 10px; padding-left: 15px; border-left: 1px solid #e2e8f0; }
@@ -36,7 +34,6 @@
         .page-header h1 { font-size: 24px; font-weight: 800; color: var(--primary); }
         .page-header p { font-size: 14px; color: #64748b; margin-top: 5px; }
 
-        /* ROSTER EMAIL FORM */
         .roster-card { background: #fff; padding: 30px; border-radius: 16px; border: 1px solid #e2e8f0; max-width: 800px; box-shadow: 0 10px 25px rgba(0,0,0,0.02); }
         
         #rosterFormContainer { display: none; }
@@ -45,20 +42,18 @@
         .input-group { margin-bottom: 20px; }
         .input-group label { display: block; font-weight: 700; font-size: 13px; color: var(--primary); margin-bottom: 8px; }
         .input-group input, .input-group textarea { width: 100%; padding: 12px 15px; border: 1px solid #cbd5e1; border-radius: 10px; font-size: 14px; transition: 0.3s; font-family: inherit; }
-        .input-group input:focus, .input-group textarea:focus { outline: none; border-color: var(--accent); box-shadow: 0 0 0 3px rgba(56, 189, 248, 0.1); }
         
-        /* TIME INPUTS FLEXBOX */
         .time-flex { display: flex; gap: 15px; margin-bottom: 20px; }
         .time-flex .input-group { margin-bottom: 0; flex: 1; }
+
+        /* WARNING TEXT - RED COLOR */
+        #shiftWarning { display: none; color: #ef4444; font-size: 13px; font-weight: 700; margin-top: 8px; background: #fee2e2; padding: 10px; border-radius: 6px; border: 1px solid #fca5a5; }
 
         .email-badges { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 10px; }
         .email-badge { background: #f1f5f9; padding: 5px 12px; border-radius: 20px; font-size: 12px; font-weight: 600; color: #475569; border: 1px solid #e2e8f0; }
         
-        .btn-send { background: var(--secondary); color: #fff; border: none; padding: 14px 24px; border-radius: 10px; font-weight: 700; font-size: 15px; cursor: pointer; transition: 0.3s; display: flex; align-items: center; gap: 10px; width: 100%; justify-content: center; }
-        .btn-send:hover { background: #059669; transform: translateY(-2px); box-shadow: 0 8px 15px rgba(16, 185, 129, 0.2); }
-
-        #successModal { display: none; background: #dcfce3; color: #065f46; padding: 20px; border-radius: 12px; margin-top: 20px; border: 1px solid #a7f3d0; text-align: center; font-weight: 600; animation: fadeIn 0.5s; }
-        @keyframes fadeIn { from { opacity: 0; transform: translateY(-10px); } to { opacity: 1; transform: translateY(0); } }
+        .btn-send { background: var(--secondary); color: #fff; border: none; padding: 14px 24px; border-radius: 10px; font-weight: 700; font-size: 15px; cursor: pointer; transition: 0.3s; width: 100%; justify-content: center; }
+        #successModal { display: none; background: #dcfce3; color: #065f46; padding: 20px; border-radius: 12px; margin-top: 20px; border: 1px solid #a7f3d0; text-align: center; font-weight: 600; }
     </style>
 </head>
 <body>
@@ -98,17 +93,19 @@
                     <div class="time-flex">
                         <div class="input-group">
                             <label>Shift Start Time</label>
-                            <input type="time" id="shiftStart" required>
+                            <input type="time" id="shiftStart" required onchange="checkShiftDuration()">
                         </div>
                         <div class="input-group">
                             <label>Shift End Time</label>
-                            <input type="time" id="shiftEnd" required>
+                            <input type="time" id="shiftEnd" required onchange="checkShiftDuration()">
                         </div>
                     </div>
+                    
+                    <div id="shiftWarning"><i class="fas fa-exclamation-triangle"></i> <span></span></div>
 
-                    <div class="input-group">
+                    <div class="input-group" style="margin-top:20px;">
                         <label>Staff Email IDs (Separate with commas)</label>
-                        <textarea id="emailList" rows="3" placeholder="e.g. john@cureandcare.com.au, rahul@gmail.com" required></textarea>
+                        <textarea id="emailList" rows="3" placeholder="e.g. john@cureandcare.com.au" required></textarea>
                         <div class="email-badges" id="emailBadgesPreview"></div>
                     </div>
 
@@ -136,7 +133,6 @@
     </div>
 
     <script>
-        // 1. CHECK LOGIN
         const currentUser = JSON.parse(localStorage.getItem('currentUser'));
         if (!currentUser) { window.location.href = 'crm-login.html'; }
         
@@ -147,29 +143,7 @@
 
         const sidebar = document.getElementById('sidebarMenu');
         
-        // 2. CHECK PERMISSIONS & RENDER UI
         if (userRole === 'admin' || userRole === 'manager') {
             document.getElementById('rosterFormContainer').style.display = 'block';
             sidebar.innerHTML = `
-                <a href="crm-home.html" class="nav-item"><i class="fas fa-th-large"></i> Dashboard</a>
-                <a href="crm-chat.html" class="nav-item" style="color: #38bdf8;"><i class="fas fa-comments"></i> Team Chat <span style="background:#ef4444; color:#fff; font-size:9px; padding:2px 5px; border-radius:10px; margin-left:auto;">LIVE</span></a>
-                <a href="crm.html" class="nav-item"><i class="far fa-calendar-alt"></i> View Shift Calendar</a>
-                <a href="crm-roster.html" class="nav-item active"><i class="fas fa-paper-plane"></i> Send Rosters</a>
-            `;
-        } else {
-            document.getElementById('accessRestrictedContainer').style.display = 'block';
-            document.getElementById('dynamicPageHeader').style.display = 'none'; 
-            sidebar.innerHTML = `
-                <a href="crm-home.html" class="nav-item"><i class="fas fa-home"></i> Home</a>
-                <a href="crm-chat.html" class="nav-item" style="color: #38bdf8;"><i class="fas fa-comments"></i> Team Chat <span style="background:#ef4444; color:#fff; font-size:9px; padding:2px 5px; border-radius:10px; margin-left:auto;">LIVE</span></a>
-                <a href="crm.html" class="nav-item"><i class="far fa-calendar-alt"></i> My Shift Calendar</a>
-            `;
-        }
-
-        // EMAIL PREVIEW
-        document.getElementById('emailList').addEventListener('input', function(e) {
-            const emails = e.target.value.split(',').filter(em => em.trim() !== '');
-            const badgeContainer = document.getElementById('emailBadgesPreview');
-            badgeContainer.innerHTML = '';
-            emails.forEach(email => {
-                badgeContainer.innerHTML += `<span class="email-badge"><i class
+                <a href="crm-home
