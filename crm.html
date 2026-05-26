@@ -68,23 +68,10 @@
         .btn-excel { background: #3b82f6; color: white; }
         .btn-publish { background: #10b981; color: white; }
 
-        /* VIEW ONLY CSS FOR STAFF */
         .staff-view-only select { pointer-events: none; background-color: #f8fafc !important; color: #64748b !important; border-color: #e2e8f0 !important; -moz-appearance: none; -webkit-appearance: none; appearance: none; }
 
-        /* 🚀 NEW FOOTER STYLES */
-        .crm-footer {
-            background: #fff;
-            padding: 12px 20px;
-            text-align: center;
-            font-size: 12px;
-            font-weight: 600;
-            color: var(--text-light);
-            border-top: 1px solid var(--border);
-            flex-shrink: 0;
-        }
-        .crm-footer span {
-            color: var(--primary);
-        }
+        .crm-footer { background: #fff; padding: 12px 20px; text-align: center; font-size: 12px; font-weight: 600; color: var(--text-light); border-top: 1px solid var(--border); flex-shrink: 0; }
+        .crm-footer span { color: var(--primary); }
     </style>
 </head>
 <body>
@@ -153,7 +140,6 @@
             </table>
         </div>
 
-        <!-- 🚀 NEW FOOTER ADDED HERE -->
         <footer class="crm-footer">
             Copyright © 2026 cure and care | Designed by <span>skywebsolutions.in</span>
         </footer>
@@ -178,7 +164,6 @@
             }
         }
 
-        // 🚀 AAPKI FIREBASE CONFIG
         const firebaseConfig = {
             apiKey: "AIzaSyC-Ito4dNRQ45IjIOWL63Hqk9sKzbvKe-M",
             authDomain: "cureandcare-crm.firebaseapp.com",
@@ -191,7 +176,6 @@
         firebase.initializeApp(firebaseConfig);
         const database = firebase.database();
 
-        // 🚀 EMAILJS VARIABLES
         const SERVICE_ID = "service_adqy43h";
         const TEMPLATE_ID = "template_gb0v9d9"; 
         const TEST_EMAILS = ["puja851021@gmail.com", "starunsharma67@gmail.com", "starun64@gmail.com", "ayushsydney@gmail.com", "sharma.meenu84@gmail.com"];
@@ -200,7 +184,6 @@
         const TASK_LIST = ["Select Task", "1:1 Support", "Community Participation", "Sleepover", "Awake Night"];
         const HR_OPTIONS = ["Select", "12:00", "01:00", "02:00", "03:00", "04:00", "05:00", "06:00", "07:00", "08:00", "09:00", "10:00", "11:00", "Sleepover", "Leave", "Sick", "Training"];
 
-        // 🚀 CLOCK
         function updateLiveClocks() {
             const now = new Date();
             const options = { hour: '2-digit', minute: '2-digit', second: '2-digit', hour12: true };
@@ -209,7 +192,6 @@
         }
         setInterval(updateLiveClocks, 1000);
 
-        // 🚀 BUILD GRID
         function buildGrid() {
             const loc = document.getElementById('locationSelect').value;
             const start = new Date(document.getElementById('rosterStartDate').value);
@@ -276,7 +258,38 @@
             });
         }
 
-        // 🚀 SAVE ROSTER TO FIREBASE
+        // 🚀 10-HOUR WARNING LOGIC FOR ROSTER GRID
+        document.getElementById('rosterGrid').addEventListener('change', function(e) {
+            if (e.target.classList.contains('t-hr') || e.target.classList.contains('t-ampm') || 
+                e.target.classList.contains('t-hr2') || e.target.classList.contains('t-ampm2')) {
+                
+                let td = e.target.closest('td');
+                let hr1 = td.querySelector('.t-hr').value;
+                let ampm1 = td.querySelector('.t-ampm').value;
+                let hr2 = td.querySelector('.t-hr2').value;
+                let ampm2 = td.querySelector('.t-ampm2').value;
+
+                if (hr1 !== 'Select' && hr2 !== 'Select' && hr1.includes(':') && hr2.includes(':')) {
+                    let parseTime = (timeStr, ampm) => {
+                        let [h, m] = timeStr.split(':').map(Number);
+                        if (ampm === 'PM' && h !== 12) h += 12;
+                        if (ampm === 'AM' && h === 12) h = 0;
+                        return h + (m / 60);
+                    };
+
+                    let t1 = parseTime(hr1, ampm1);
+                    let t2 = parseTime(hr2, ampm2);
+                    let diff = t2 - t1;
+
+                    if (diff < 0) diff += 24; // Overnight shift logic
+
+                    if (diff > 10) {
+                        alert(`⚠️ STRICT WARNING!\n\nThis shift is ${diff.toFixed(1)} hours long, which exceeds the 10-hour limit.\nPlease verify before saving.`);
+                    }
+                }
+            }
+        });
+
         function saveRoster() {
             if (currentRole === 'staff') return; 
 
@@ -319,7 +332,6 @@
             });
         }
 
-        // 🚀 EXCEL LOGIC
         function exportToExcel() {
             if (currentRole === 'staff') return;
 
@@ -352,7 +364,6 @@
             const a = document.createElement('a'); a.href = URL.createObjectURL(blob); a.download = `Roster.csv`; a.click();
         }
 
-        // 🚀 EMAIL LOGIC
         async function sendRosterEmail() {
             if (currentRole === 'staff') return;
 
