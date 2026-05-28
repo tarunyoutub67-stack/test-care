@@ -31,6 +31,13 @@
         .nav-item { display: flex; align-items: center; gap: 12px; padding: 12px 15px; color: var(--text-light); font-weight: 600; font-size: 13px; border-radius: 8px; cursor: pointer; transition: 0.2s; margin-bottom: 5px; text-decoration: none; }
         .nav-item:hover { background: #f1f5f9; color: var(--text-main); }
         .nav-item.active { background: rgba(0,162,237,0.1); color: var(--primary); border-left: 4px solid var(--primary); }
+        
+        /* 🚀 NEW SIDEBAR CSS ADDED HERE */
+        .nav-item .caret { margin-left: auto; transition: transform 0.3s; }
+        .nav-item.open .caret { transform: rotate(180deg); }
+        .dropdown-container { display: none; padding-left: 15px; margin-bottom: 10px; border-left: 2px solid #e2e8f0; margin-left: 20px; }
+        .dropdown-container.open { display: block; }
+        .dropdown-container .nav-item { padding: 10px 15px; font-size: 12px; margin-bottom: 2px; }
 
         .main-content { flex: 1; display: flex; flex-direction: column; overflow: hidden; }
         .top-header { height: 65px; background: #fff; border-bottom: 1px solid var(--border); display: flex; align-items: center; justify-content: space-between; padding: 0 25px; flex-shrink: 0; }
@@ -73,7 +80,6 @@
         .crm-footer { background: #fff; padding: 12px 20px; text-align: center; font-size: 12px; font-weight: 600; color: var(--text-light); border-top: 1px solid var(--border); flex-shrink: 0; }
         .crm-footer span { color: var(--primary); }
 
-        /* 🚀 NEW CUSTOM OVERTIME MODAL (YES/NO) */
         .modal-overlay { position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: rgba(15, 23, 42, 0.7); z-index: 9999; display: none; align-items: center; justify-content: center; backdrop-filter: blur(4px); }
         .modal-box { background: #fff; padding: 30px; border-radius: 20px; text-align: center; max-width: 400px; width: 90%; box-shadow: 0 20px 40px rgba(0,0,0,0.2); animation: popIn 0.3s ease; }
         @keyframes popIn { from { transform: scale(0.9); opacity: 0; } to { transform: scale(1); opacity: 1; } }
@@ -98,27 +104,30 @@
         </div>
     </div>
 
+    <!-- 🚀 UPDATED SIDEBAR -->
     <div class="sidebar">
         <div class="logo-area"><h2><i class="fas fa-heartbeat"></i> CureAndCare</h2></div>
         <div class="nav-menu">
-            <a href="crm-home.html" class="nav-item"><i class="fas fa-home"></i> Home</a>
+            <a href="crm-home.html" onclick="localStorage.setItem('targetTab', 'dashboardSection')" class="nav-item"><i class="fas fa-home"></i> Dashboard</a>
             
             <a href="crm-chat.html" class="nav-item" style="color: #00a2ed; font-weight: 800; background: #e0f2fe; border: 1px solid #7dd3fc; margin: 10px 5px;">
                 <i class="fas fa-comments"></i> Team Chat 
                 <span style="background:#ef4444; color:#fff; font-size:9px; padding:2px 5px; border-radius:10px; margin-left:auto;">LIVE</span>
             </a>
 
-            <div id="adminMenus">
-                <a class="nav-item"><i class="fas fa-wallet"></i> Funding</a>
-                <a href="crm-invoice.html" class="nav-item"><i class="fas fa-file-invoice-dollar"></i> Invoice & claims</a>
+            <!-- FUNDING BLOCK MATCHING HOME PAGE -->
+            <div id="fundingBlock" style="background:#e0f2fe; border: 1px solid #38bdf8; border-radius: 8px; margin: 10px 5px; overflow: hidden;">
+                <a href="#" class="nav-item" id="fundingMenuBtn" onclick="toggleDropdown('fundingDropdown', this)" style="color:#0284c7; font-weight:800;">
+                    <i class="fas fa-wallet"></i> FUNDING <i class="fas fa-chevron-down caret"></i>
+                </a>
+                <div class="dropdown-container" id="fundingDropdown" style="background:#fff; margin:0; padding:10px 15px; border-left:none;">
+                    <a href="crm-home.html" onclick="localStorage.setItem('targetTab', 'ndisSection')" class="nav-item"><i class="fas fa-file-contract"></i> Create NDIS & Services</a>
+                    <a href="crm-invoice.html" class="nav-item"><i class="fas fa-file-invoice-dollar"></i> Invoice & Claims</a>
+                </div>
             </div>
 
             <a class="nav-item active"><i class="fas fa-calendar-alt"></i> Time & Attendance (Roster)</a>
-            
-            <div id="adminMenus2">
-                <a class="nav-item"><i class="fas fa-users"></i> HR</a>
-                <a class="nav-item"><i class="fas fa-link"></i> Links</a>
-            </div>
+            <a href="crm-home.html" onclick="localStorage.setItem('targetTab', 'hrSection')" class="nav-item" id="navHr"><i class="fas fa-users-cog"></i> HR (Manage Staff)</a>
         </div>
     </div>
 
@@ -134,7 +143,7 @@
             <div class="user-profile">
                 <i class="fas fa-user-circle" style="font-size:18px; color:var(--primary);"></i> 
                 Hi, <span id="displayStaffName">Staff</span>
-                <button onclick="localStorage.clear(); window.location.replace('crm-login.html');" style="background:#ef4444; color:#fff; border:none; padding:6px 12px; border-radius:6px; cursor:pointer; font-weight:700; font-size:11px; margin-left:10px;">Logout</button>
+                <button onclick="localStorage.clear(); sessionStorage.clear(); window.location.replace('crm-login.html');" style="background:#ef4444; color:#fff; border:none; padding:6px 12px; border-radius:6px; cursor:pointer; font-weight:700; font-size:11px; margin-left:10px;">Logout</button>
             </div>
         </header>
 
@@ -169,6 +178,12 @@
     </div>
 
     <script>
+        // 🚀 DROPDOWN FUNCTION ADDED
+        function toggleDropdown(id, el) {
+            document.getElementById(id).classList.toggle('open');
+            el.classList.toggle('open');
+        }
+
         // 🚀 UI & ROLE CHECK
         let currentRole = 'staff'; 
         if(activeUser) {
@@ -176,9 +191,9 @@
             currentRole = String(activeUser.role || '').toLowerCase().trim();
             
             if (currentRole === 'staff') {
-                document.getElementById('adminMenus').style.display = 'none';
-                document.getElementById('adminMenus2').style.display = 'none';
-                document.getElementById('actionButtons').style.display = 'none'; 
+                if(document.getElementById('fundingBlock')) document.getElementById('fundingBlock').style.display = 'none';
+                if(document.getElementById('navHr')) document.getElementById('navHr').style.display = 'none';
+                if(document.getElementById('actionButtons')) document.getElementById('actionButtons').style.display = 'none'; 
                 
                 if(document.getElementById('saveBtn')) document.getElementById('saveBtn').style.display = 'none';
                 if(document.getElementById('excelBtn')) document.getElementById('excelBtn').style.display = 'none';
@@ -200,7 +215,16 @@
 
         const SERVICE_ID = "service_adqy43h";
         const TEMPLATE_ID = "template_gb0v9d9"; 
-        const TEST_EMAILS = ["puja851021@gmail.com", "starunsharma67@gmail.com", "starun64@gmail.com", "ayushsydney@gmail.com", "sharma.meenu84@gmail.com"];
+        
+        const TEST_EMAILS = [
+            "niteshkalia54@gmail.com", 
+            "nayswart@gmail.com", 
+            "marceloasaramos31@gmail.com", 
+            "kaptingeit@yahoo.com", 
+            "498876729@qq.com", 
+            "accounts@cureandcare.com.au", 
+            "admin@cureandcare.com.au"
+        ];
         
         const STAFF_LIST = ["None", "Ankit", "Bubble", "Rene", "Titus", "Marcelo", "Nitesh"];
         const TASK_LIST = ["Select Task", "1:1 Support", "Community Participation", "Sleepover", "Awake Night"];
@@ -279,7 +303,6 @@
             });
         }
 
-        // 🚀 YES/NO MODAL LOGIC FOR OVERTIME
         let targetSelectInput = null;
 
         document.getElementById('rosterGrid').addEventListener('change', function(e) {
@@ -307,7 +330,7 @@
                     if (diff < 0) diff += 24; 
 
                     if (diff > 10) {
-                        targetSelectInput = e.target; // Save which input triggered this
+                        targetSelectInput = e.target; 
                         document.getElementById('timeWarningText').innerHTML = `You are trying to set a shift that is <b>${diff.toFixed(1)} hours</b> long. This exceeds the 10-hour limit.<br><br>Do you want to update this shift?`;
                         document.getElementById('timeWarningModal').style.display = 'flex';
                     }
@@ -318,7 +341,7 @@
         function closeTimeWarning(isYes) {
             document.getElementById('timeWarningModal').style.display = 'none';
             if (!isYes && targetSelectInput) {
-                targetSelectInput.value = 'Select'; // Reset input to 'Select' if "No" is clicked
+                targetSelectInput.value = 'Select'; 
             }
             targetSelectInput = null;
         }
