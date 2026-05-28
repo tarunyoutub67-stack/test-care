@@ -1,21 +1,19 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <script type="text/javascript" src="https://cdn.jsdelivr.net/npm/@emailjs/browser@3/dist/email.min.js"></script>
-    <script type="text/javascript">
-        (function() { emailjs.init("wLfY3tCPBLZBuNMkx"); })();
+    <script>
+        // 🚀 LOGIN SECURITY CHECK (Fixed for Staff Access)
+        const activeUser = JSON.parse(localStorage.getItem('currentUser'));
+        if (!activeUser) { 
+            window.location.replace('crm-login.html'); 
+        } 
     </script>
 
     <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
     <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-database.js"></script>
-
-    <script>
-        const activeUser = JSON.parse(localStorage.getItem('currentUser'));
-        if (!activeUser) { window.location.replace('crm-login.html'); }
-    </script>
     
     <meta charset="UTF-8">
-    <title>CureAndCare CRM - Live Roster</title>
+    <title>Admin Dashboard - CureAndCare</title>
     <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
     
@@ -24,6 +22,7 @@
         * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Plus Jakarta Sans', sans-serif; }
         body { display: flex; height: 100vh; overflow: hidden; background: var(--bg); }
 
+        /* SIDEBAR & DROPDOWN */
         .sidebar { width: 260px; background: #ffffff; border-right: 1px solid var(--border); display: flex; flex-direction: column; flex-shrink: 0; z-index: 20; }
         .logo-area { padding: 20px; border-bottom: 1px solid var(--border); }
         .logo-area h2 { color: var(--primary); font-size: 20px; font-weight: 800; display: flex; align-items: center; gap: 10px; }
@@ -31,136 +30,213 @@
         .nav-item { display: flex; align-items: center; gap: 12px; padding: 12px 15px; color: var(--text-light); font-weight: 600; font-size: 13px; border-radius: 8px; cursor: pointer; transition: 0.2s; margin-bottom: 5px; text-decoration: none; }
         .nav-item:hover { background: #f1f5f9; color: var(--text-main); }
         .nav-item.active { background: rgba(0,162,237,0.1); color: var(--primary); border-left: 4px solid var(--primary); }
+        
+        .nav-item .caret { margin-left: auto; transition: transform 0.3s; }
+        .nav-item.open .caret { transform: rotate(180deg); }
+        .dropdown-container { display: none; padding-left: 15px; margin-bottom: 10px; border-left: 2px solid #e2e8f0; margin-left: 20px; }
+        .dropdown-container.open { display: block; }
+        .dropdown-container .nav-item { padding: 10px 15px; font-size: 12px; margin-bottom: 2px; }
 
         .main-content { flex: 1; display: flex; flex-direction: column; overflow: hidden; }
         .top-header { height: 65px; background: #fff; border-bottom: 1px solid var(--border); display: flex; align-items: center; justify-content: space-between; padding: 0 25px; flex-shrink: 0; }
-        .page-title { font-size: 18px; font-weight: 700; color: var(--text-main); display: flex; align-items: center; gap: 10px; }
-        
-        .cloud-badge { font-size: 11px; background: #d1fae5; color: #059669; padding: 4px 8px; border-radius: 5px; border: 1px solid #10b981; }
-
-        .live-clocks { display: flex; gap: 12px; }
-        .clock-badge { background: #f1f5f9; border: 1px solid #cbd5e1; padding: 6px 12px; border-radius: 8px; font-size: 11px; font-weight: 700; color: #334155; display: flex; align-items: center; gap: 5px; }
-        .clock-badge span { color: var(--primary-dark); font-weight: 800; font-variant-numeric: tabular-nums; }
-
+        .page-title { font-size: 18px; font-weight: 700; color: var(--text-main); }
         .user-profile { display: flex; align-items: center; gap: 15px; font-weight: 700; font-size: 13px; color: var(--text-main); }
 
-        .roster-view { padding: 20px; overflow-y: auto; flex: 1; }
-        .toolbar { background: #fff; padding: 15px; border-radius: 10px; border: 1px solid var(--border); margin-bottom: 15px; display: flex; flex-wrap: wrap; gap: 15px; align-items: center; justify-content: space-between; }
-        .select-input { padding: 9px 12px; border-radius: 6px; border: 1px solid #cbd5e1; font-size: 13px; font-weight: 600; outline: none; }
-        
-        .excel-table { width: 100%; border-collapse: collapse; min-width: 1200px; background: #fff; border: 1px solid var(--border); border-radius: 10px; overflow: hidden; }
-        .excel-table th { background: var(--primary); color: white; padding: 14px 10px; border: 1px solid var(--primary-dark); font-size: 11px; position: sticky; top: 0; z-index: 10; min-width: 170px; }
-        .excel-table td { border: 1px solid #e2e8f0; vertical-align: top; padding: 12px 10px; }
-        
-        .t-label { font-size: 9px; color: #94a3b8; font-weight: 800; margin-bottom: 3px; text-transform: uppercase; letter-spacing: 0.5px; }
-        .time-flex { display: flex; gap: 6px; margin-bottom: 8px; }
-        .t-hr, .t-hr2 { flex: 2; padding: 6px 4px; border: 1px solid #cbd5e1; border-radius: 5px; font-size: 11px; font-weight: 600; outline: none; background: #fff; }
-        .t-ampm, .t-ampm2 { flex: 1; padding: 6px 2px; border: 1px solid #cbd5e1; border-radius: 5px; font-size: 11px; font-weight: 700; background: #f8fafc; text-align: center; }
-        
-        .divider { border-top: 1px dashed #cbd5e1; margin: 8px 0; }
-        
-        .staff-select, .task-select { width: 100%; padding: 7px; border: 1px solid #cbd5e1; border-radius: 5px; font-size: 11px; font-weight: 700; outline: none; cursor: pointer; margin-bottom: 8px; }
-        .staff-select { background: #f0f9ff; color: #008ecc; border-color: #00a2ed; }
-        .task-select { background: #fff; color: #475569; }
+        /* TAB SECTIONS */
+        .app-section { display: none; flex: 1; overflow-y: auto; padding: 25px; }
+        .app-section.active { display: block; }
 
-        .btn { padding: 9px 18px; border-radius: 6px; font-weight: 700; cursor: pointer; border: none; font-size: 13px; display: flex; align-items: center; gap: 8px; }
-        .btn-save { background: #6366f1; color: white; }
-        .btn-excel { background: #3b82f6; color: white; }
-        .btn-publish { background: #10b981; color: white; }
+        /* PANELS */
+        .panel { background: #fff; border: 1px solid var(--border); border-radius: 12px; padding: 25px; box-shadow: 0 2px 10px rgba(0,0,0,0.02); margin-bottom: 20px;}
+        .panel-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; border-bottom: 1px solid var(--border); padding-bottom: 15px; }
+        .panel-title { font-size: 18px; font-weight: 800; color: var(--text-main); display: flex; align-items: center; gap: 10px; }
+        
+        .form-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 15px; margin-bottom: 15px; }
+        .input-group { margin-bottom: 10px; }
+        .input-group label { display: block; font-size: 12px; font-weight: 700; color: var(--text-main); margin-bottom: 5px; }
+        .input-group input[type="text"], .input-group input[type="number"], .input-group input[type="date"], .input-group input[type="email"], .input-group select { width: 100%; padding: 10px 12px; border: 1px solid #cbd5e1; border-radius: 6px; font-size: 13px; font-family: inherit; outline: none; }
+        .input-group input:focus, .input-group select:focus { border-color: var(--primary); }
+        
+        /* NDIS FORM STYLES */
+        .form-section { margin-bottom: 25px; padding-bottom: 20px; border-bottom: 1px dashed var(--border); }
+        .form-section:last-child { border-bottom: none; }
+        .form-section h3 { font-size: 14px; font-weight: 800; color: var(--primary); margin-bottom: 15px; text-transform: uppercase; letter-spacing: 0.5px; display:flex; justify-content:space-between; align-items:center;}
+        .pace-badge { background: #e0f2fe; color: #0284c7; padding: 4px 10px; border-radius: 4px; font-size: 11px; font-weight: 800; letter-spacing: 1px; }
+        .radio-group { display: flex; gap: 20px; align-items: center; margin-top: 8px; flex-wrap: wrap;}
+        .radio-label { font-size: 13px; font-weight: 600; color: var(--text-main); display: flex; align-items: center; gap: 6px; cursor: pointer; }
 
-        .staff-view-only select { pointer-events: none; background-color: #f8fafc !important; color: #64748b !important; border-color: #e2e8f0 !important; -moz-appearance: none; -webkit-appearance: none; appearance: none; }
+        .btn-action { background: var(--primary); color: white; border: none; padding: 12px 24px; border-radius: 6px; font-weight: 700; cursor: pointer; font-size: 14px; transition: 0.2s; display: inline-flex; align-items: center; gap: 8px; }
+        .btn-action:hover { background: var(--primary-dark); }
+        .btn-action:disabled { opacity: 0.7; cursor: not-allowed; }
+        
+        .data-table { width: 100%; border-collapse: collapse; margin-bottom: 10px; font-size: 13px; }
+        .data-table th { background: #f8fafc; padding: 12px; text-align: left; border-bottom: 2px solid #cbd5e1; color: #334155; font-weight:800; text-transform:uppercase; white-space:nowrap; }
+        .data-table td { padding: 12px; border-bottom: 1px solid #e2e8f0; font-weight: 500; vertical-align: middle;}
+        
+        .badge { padding: 4px 8px; border-radius: 4px; font-size: 10px; font-weight: 800; text-transform: uppercase; }
+        .badge.admin { background: #fee2e2; color: #b91c1c; }
+        .badge.manager { background: #fef08a; color: #854d0e; }
+        .badge.staff { background: #dcfce7; color: #15803d; }
 
         .crm-footer { background: #fff; padding: 12px 20px; text-align: center; font-size: 12px; font-weight: 600; color: var(--text-light); border-top: 1px solid var(--border); flex-shrink: 0; }
         .crm-footer span { color: var(--primary); }
 
-        /* 🚀 OVERTIME MODAL (YES/NO) */
-        .modal-overlay { position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: rgba(15, 23, 42, 0.7); z-index: 9999; display: none; align-items: center; justify-content: center; backdrop-filter: blur(4px); }
-        .modal-box { background: #fff; padding: 30px; border-radius: 20px; text-align: center; max-width: 400px; width: 90%; box-shadow: 0 20px 40px rgba(0,0,0,0.2); animation: popIn 0.3s ease; }
-        @keyframes popIn { from { transform: scale(0.9); opacity: 0; } to { transform: scale(1); opacity: 1; } }
-        .modal-btn { padding: 12px 25px; border-radius: 10px; font-weight: 700; cursor: pointer; border: none; font-size: 14px; flex: 1; transition: 0.2s; }
-        .btn-yes { background: #10b981; color: white; }
-        .btn-yes:hover { background: #059669; }
-        .btn-no { background: #ef4444; color: white; }
-        .btn-no:hover { background: #dc2626; }
+        /* 🚀 WELCOME MODAL ANIMATION */
+        @keyframes popIn { 
+            0% { transform: scale(0.8); opacity: 0; } 
+            100% { transform: scale(1); opacity: 1; } 
+        }
     </style>
 </head>
 <body>
 
-    <div class="modal-overlay" id="timeWarningModal">
-        <div class="modal-box">
-            <i class="fas fa-exclamation-circle" style="font-size: 55px; color: #ef4444; margin-bottom: 15px;"></i>
-            <h3 style="color: #1e293b; margin-bottom: 10px; font-weight: 800;">Overtime Warning!</h3>
-            <p id="timeWarningText" style="color: #64748b; font-size: 14px; margin-bottom: 25px; line-height: 1.5;"></p>
-            <div style="display: flex; gap: 15px;">
-                <button class="modal-btn btn-no" onclick="closeTimeWarning(false)">No</button>
-                <button class="modal-btn btn-yes" onclick="closeTimeWarning(true)">Yes, Update</button>
-            </div>
+    <div id="welcomeModal" style="display: none; position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: rgba(15, 23, 42, 0.7); z-index: 9999; align-items: center; justify-content: center; backdrop-filter: blur(4px);">
+        <div style="background: #fff; padding: 40px; border-radius: 20px; text-align: center; max-width: 400px; width: 90%; box-shadow: 0 20px 40px rgba(0,0,0,0.2); animation: popIn 0.5s ease;">
+            <img src="https://cdn-icons-png.flaticon.com/512/7936/7936922.png" alt="Welcome" style="width: 80px; margin-bottom: 20px;">
+            <h2 style="color: #1e293b; margin-bottom: 10px; font-weight: 800;">Welcome to CureAndCare!</h2>
+            <p style="color: #64748b; font-size: 15px; margin-bottom: 25px;">Hello <strong id="welcomeUserName" style="color: #00a2ed;">User</strong>, we are glad to have you here.</p>
+            <button onclick="document.getElementById('welcomeModal').style.display='none'" style="background: #00a2ed; color: white; border: none; padding: 12px 30px; border-radius: 10px; font-weight: 700; cursor: pointer; font-size: 15px; transition: 0.2s;">Let's Get Started <i class="fas fa-arrow-right" style="margin-left: 5px;"></i></button>
         </div>
     </div>
 
     <div class="sidebar">
         <div class="logo-area"><h2><i class="fas fa-heartbeat"></i> CureAndCare</h2></div>
         <div class="nav-menu">
-            <!-- ✅ FIXED LINKS HERE -->
-            <a href="crm-home.html" class="nav-item"><i class="fas fa-home"></i> Home</a>
+            <a href="#" class="nav-item active" onclick="switchTab('dashboardSection', this)"><i class="fas fa-home"></i> Dashboard</a>
             
             <a href="crm-chat.html" class="nav-item" style="color: #00a2ed; font-weight: 800; background: #e0f2fe; border: 1px solid #7dd3fc; margin: 10px 5px;">
                 <i class="fas fa-comments"></i> Team Chat 
                 <span style="background:#ef4444; color:#fff; font-size:9px; padding:2px 5px; border-radius:10px; margin-left:auto;">LIVE</span>
             </a>
 
-            <div id="adminMenus">
-                <a href="crm-home.html" class="nav-item"><i class="fas fa-wallet"></i> Funding</a>
-                <a href="crm-invoice.html" class="nav-item"><i class="fas fa-file-invoice-dollar"></i> Invoice & claims</a>
+            <div id="fundingBlock" style="background:#e0f2fe; border: 1px solid #38bdf8; border-radius: 8px; margin: 10px 5px; overflow: hidden;">
+                <a href="#" class="nav-item" id="fundingMenuBtn" onclick="toggleDropdown('fundingDropdown', this)" style="color:#0284c7; font-weight:800;">
+                    <i class="fas fa-wallet"></i> FUNDING <i class="fas fa-chevron-down caret"></i>
+                </a>
+                <div class="dropdown-container" id="fundingDropdown" style="background:#fff; margin:0; padding:10px 15px; border-left:none;">
+                    <a href="#" class="nav-item" onclick="switchTab('ndisSection', this, true)"><i class="fas fa-file-contract"></i> Create NDIS & Services</a>
+                    <a href="crm-invoice.html" class="nav-item"><i class="fas fa-file-invoice-dollar"></i> Invoice & Claims</a>
+                </div>
             </div>
 
-            <a class="nav-item active"><i class="fas fa-calendar-alt"></i> Time & Attendance (Roster)</a>
-            
-            <div id="adminMenus2">
-                <a href="crm-home.html" class="nav-item"><i class="fas fa-users"></i> HR</a>
-                <a href="crm-home.html" class="nav-item"><i class="fas fa-link"></i> Links</a>
-            </div>
+            <a href="crm.html" class="nav-item"><i class="fas fa-calendar-alt"></i> Time & Attendance (Roster)</a>
+            <a href="#" class="nav-item" id="navHr" onclick="switchTab('hrSection', this)"><i class="fas fa-users-cog"></i> HR (Manage Staff)</a>
         </div>
     </div>
 
     <div class="main-content">
         <header class="top-header">
-            <div class="page-title">Shift Roster Management <span class="cloud-badge"><i class="fas fa-cloud"></i> Cloud Synced</span></div>
-
-            <div class="live-clocks">
-                <div class="clock-badge">🇮🇳 IND: <span id="timeIND">--:--:--</span></div>
-                <div class="clock-badge">🇦🇺 AUS: <span id="timeAUS">--:--:--</span></div>
-            </div>
-
+            <div class="page-title" id="pageTitle">Dashboard Overview</div>
             <div class="user-profile">
                 <i class="fas fa-user-circle" style="font-size:18px; color:var(--primary);"></i> 
-                Hi, <span id="displayStaffName">Staff</span>
-                <button onclick="localStorage.clear(); window.location.replace('crm-login.html');" style="background:#ef4444; color:#fff; border:none; padding:6px 12px; border-radius:6px; cursor:pointer; font-weight:700; font-size:11px; margin-left:10px;">Logout</button>
+                <span id="displayAdminName">User</span>
+                <span id="roleBadge" class="badge"></span>
+                <button onclick="logout()" style="background:#ef4444; color:#fff; border:none; padding:6px 12px; border-radius:6px; cursor:pointer; font-weight:700; font-size:11px; margin-left:10px;">Logout</button>
             </div>
         </header>
 
-        <div class="roster-view">
-            <div class="toolbar">
-                <div style="display:flex; gap:15px; align-items:center;">
-                    <select id="locationSelect" class="select-input" onchange="buildGrid()" style="width:320px;">
-                        <option>27 Clearview Crescent Orange NSW 2800</option>
-                        <option>27A Clearview Crescent Orange NSW 2800</option>
-                        <option>7 Gilroy Place Orange NSW 2800</option>
-                    </select>
-                    <input type="date" id="rosterStartDate" value="2026-05-11" onchange="buildGrid()" class="select-input">
-                </div>
-                
-                <div id="actionButtons" style="display:flex; gap:10px;">
-                    <button class="btn btn-save" id="saveBtn" onclick="saveRoster()"><i class="fas fa-save"></i> Save Roster</button>
-                    <button class="btn btn-excel" id="excelBtn" onclick="exportToExcel()"><i class="fas fa-file-excel"></i> Export Excel</button>
-                    <button class="btn btn-publish" id="publishBtn" onclick="sendRosterEmail()"><i class="fas fa-paper-plane"></i> Publish & Email</button>
+        <div id="dashboardSection" class="app-section active">
+            <div class="panel" style="background: linear-gradient(135deg, #00a2ed 0%, #0066cc 100%); color: white;">
+                <h1 style="font-size: 24px; font-weight: 800; margin-bottom: 5px;">Welcome back!</h1>
+                <p>Manage Engagements, Updates, and Live Rosters from here.</p>
+            </div>
+            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 20px;">
+                <div class="panel">
+                    <h3 style="margin-bottom:15px;"><i class="fas fa-bolt" style="color:#eab308;"></i> Quick Links</h3>
+                    <div style="display:flex; flex-direction:column; gap:10px;">
+                        
+                        <button class="btn-action" onclick="window.location.href='crm-chat.html'" style="width:100%; justify-content:center; background:#f0fdf4; color:#16a34a; border:1px solid #bbf7d0;">
+                            <i class="fas fa-comments"></i> Open Team Chat
+                        </button>
+                        
+                        <button id="btnNdis" class="btn-action" onclick="document.getElementById('fundingMenuBtn').click(); switchTab('ndisSection', this, true);" style="width:100%; justify-content:center; background:#f8fafc; color:#1e293b; border:1px solid #cbd5e1;"><i class="fas fa-plus"></i> Open NDIS Module</button>
+                        <button id="btnInvoice" class="btn-action" onclick="window.location.href='crm-invoice.html'" style="width:100%; justify-content:center; background:#f8fafc; color:#1e293b; border:1px solid #cbd5e1;"><i class="fas fa-file-invoice"></i> Generate Invoices</button>
+                        
+                        <button class="btn-action" onclick="window.location.href='crm.html'" style="width:100%; justify-content:center; background:#f8fafc; color:#1e293b; border:1px solid #cbd5e1;"><i class="fas fa-calendar-alt"></i> Manage Shift Calendar</button>
+                    </div>
                 </div>
             </div>
+        </div>
 
-            <table class="excel-table">
-                <thead id="rosterHeader"></thead>
-                <tbody id="rosterGrid"></tbody>
-            </table>
+        <div id="ndisSection" class="app-section">
+            <div class="panel" style="max-width: 1000px; margin: 0 auto;">
+                <div class="panel-header"><div class="panel-title"><i class="fas fa-hand-holding-medical" style="color:var(--primary);"></i> Create NDIS engagement</div></div>
+
+                <div class="form-section">
+                    <h3>Client information <span class="pace-badge">PACE</span></h3>
+                    <div class="input-group" style="margin-bottom:15px;">
+                        <label>Create new client or use existing client? *</label>
+                        <div class="radio-group"><label class="radio-label"><input type="radio" name="clientType" checked> Create new client</label><label class="radio-label"><input type="radio" name="clientType"> Use existing client</label></div>
+                    </div>
+                    <div class="input-group" style="margin-bottom:20px;">
+                        <label>Create as *</label>
+                        <div class="radio-group"><label class="radio-label"><input type="radio" name="createAs"> Client (multi-contact group)</label><label class="radio-label"><input type="radio" name="createAs" checked> Client (individual)</label></div>
+                    </div>
+                    <div class="form-grid">
+                        <div class="input-group"><label>NDIS number</label><input type="text" placeholder="Enter NDIS No."></div>
+                        <div class="input-group"><label>First name *</label><input type="text" placeholder="First Name"></div>
+                        <div class="input-group"><label>Last name *</label><input type="text" placeholder="Last Name"></div>
+                        <div class="input-group"><label>Phone 1</label><input type="text" placeholder="Phone 1"></div>
+                        <div class="input-group"><label>Email</label><input type="email" placeholder="Email Address"></div>
+                        <div class="input-group"><label>Date of birth</label><input type="date"></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div id="hrSection" class="app-section">
+            <div class="panel">
+                <div class="panel-header"><div class="panel-title"><i class="fas fa-user-plus"></i> Create New Staff Login</div></div>
+                <div class="form-grid">
+                    <div class="input-group">
+                        <label>Full Name *</label>
+                        <input type="text" id="staffName" placeholder="e.g. John Doe">
+                    </div>
+                    <div class="input-group">
+                        <label>Login Username *</label>
+                        <input type="text" id="staffUsername" placeholder="e.g. john123 (No spaces)">
+                    </div>
+                    <div class="input-group">
+                        <label style="color: #00a2ed;">Email Address (Optional)</label>
+                        <input type="email" id="staffEmail" placeholder="e.g. staff@email.com">
+                    </div>
+                    <div class="input-group">
+                        <label>Password *</label>
+                        <input type="text" id="staffPassword" placeholder="Enter password">
+                    </div>
+                    <div class="input-group">
+                        <label>Role / Permissions *</label>
+                        <select id="staffRole">
+                            <option value="admin">Admin (Full Access & HR)</option>
+                            <option value="manager">Manager (NDIS & Edit Roster)</option>
+                            <option value="staff" selected>Staff (View Only Roster)</option>
+                        </select>
+                    </div>
+                </div>
+                <button class="btn-action" id="createStaffBtn" onclick="createStaff()"><i class="fas fa-check-circle"></i> Create Account</button>
+            </div>
+
+            <div class="panel">
+                <div class="panel-header">
+                    <div class="panel-title"><i class="fas fa-users"></i> Users Directory</div>
+                    <button class="btn-action" style="padding: 6px 12px; font-size: 11px;" onclick="loadStaffDirectory()"><i class="fas fa-sync-alt"></i> Refresh</button>
+                </div>
+                <table class="data-table">
+                    <thead>
+                        <tr>
+                            <th>Name</th>
+                            <th>Username</th>
+                            <th>Email</th>
+                            <th>Role</th>
+                            <th>Password</th>
+                            <th>Action</th>
+                        </tr>
+                    </thead>
+                    <tbody id="staffTableBody">
+                        <tr><td colspan="6" style="text-align:center;"><i class="fas fa-spinner fa-spin"></i> Loading users...</td></tr>
+                    </tbody>
+                </table>
+            </div>
         </div>
 
         <footer class="crm-footer">
@@ -170,319 +246,209 @@
     </div>
 
     <script>
-        // 🚀 UI & ROLE CHECK
-        let currentRole = 'staff'; 
-        if(activeUser) {
-            document.getElementById('displayStaffName').innerText = activeUser.name || activeUser.username;
-            currentRole = String(activeUser.role || '').toLowerCase().trim();
-            
-            if (currentRole === 'staff') {
-                document.getElementById('adminMenus').style.display = 'none';
-                document.getElementById('adminMenus2').style.display = 'none';
-                document.getElementById('actionButtons').style.display = 'none'; 
-                
-                if(document.getElementById('saveBtn')) document.getElementById('saveBtn').style.display = 'none';
-                if(document.getElementById('excelBtn')) document.getElementById('excelBtn').style.display = 'none';
-                if(document.getElementById('publishBtn')) document.getElementById('publishBtn').style.display = 'none';
-            }
-        }
-
-        const firebaseConfig = {
-            apiKey: "AIzaSyC-Ito4dNRQ45IjIOWL63Hqk9sKzbvKe-M",
-            authDomain: "cureandcare-crm.firebaseapp.com",
-            databaseURL: "https://cureandcare-crm-default-rtdb.firebaseio.com",
-            projectId: "cureandcare-crm",
-            storageBucket: "cureandcare-crm.firebasestorage.app",
-            messagingSenderId: "294207622967",
-            appId: "1:294207622967:web:59846c2cf1b463cb21d4b2"
-        };
-        firebase.initializeApp(firebaseConfig);
+        // 🚀 FIREBASE SETUP
+        const firebaseConfig = { apiKey: "AIzaSyC-Ito4dNRQ45IjIOWL63Hqk9sKzbvKe-M", authDomain: "cureandcare-crm.firebaseapp.com", databaseURL: "https://cureandcare-crm-default-rtdb.firebaseio.com", projectId: "cureandcare-crm" };
+        if (!firebase.apps.length) firebase.initializeApp(firebaseConfig);
         const database = firebase.database();
 
-        const SERVICE_ID = "service_adqy43h";
-        const TEMPLATE_ID = "template_gb0v9d9"; 
-        
-        // 🚀 EMAIL LIST
-        const TEST_EMAILS = [
-            "niteshkalia54@gmail.com", 
-            "nayswart@gmail.com", 
-            "marceloasaramos31@gmail.com", 
-            "kaptingeit@yahoo.com", 
-            "498876729@qq.com", 
-            "accounts@cureandcare.com.au", 
-            "admin@cureandcare.com.au"
-        ];
-        
-        const STAFF_LIST = ["None", "Ankit", "Bubble", "Rene", "Titus", "Marcelo", "Nitesh"];
-        const TASK_LIST = ["Select Task", "1:1 Support", "Community Participation", "Sleepover", "Awake Night"];
-        const HR_OPTIONS = ["Select", "12:00", "01:00", "02:00", "03:00", "04:00", "05:00", "06:00", "07:00", "08:00", "09:00", "10:00", "11:00", "Sleepover", "Leave", "Sick", "Training"];
-
-        function updateLiveClocks() {
-            const now = new Date();
-            const options = { hour: '2-digit', minute: '2-digit', second: '2-digit', hour12: true };
-            document.getElementById('timeIND').innerText = new Intl.DateTimeFormat('en-US', { ...options, timeZone: 'Asia/Kolkata' }).format(now);
-            document.getElementById('timeAUS').innerText = new Intl.DateTimeFormat('en-US', { ...options, timeZone: 'Australia/Sydney' }).format(now);
-        }
-        setInterval(updateLiveClocks, 1000);
-
-        function buildGrid() {
-            const loc = document.getElementById('locationSelect').value;
-            const start = new Date(document.getElementById('rosterStartDate').value);
-            const grid = document.getElementById('rosterGrid');
-            const header = document.getElementById('rosterHeader');
-
-            let columns = [];
-            if(loc.includes("27A")) {
-                columns = ["Shift 1", "Shift 2", "Craig Calleja (Home Support)"];
-            } else {
-                columns = ["Shift 1", "Shift 2", "Shift 3", "Mitch (1:1)", "Steve's Home alone hours"];
-            }
-
-            header.innerHTML = `<tr><th width="120">Date / Day</th>${columns.map(c => `<th>${c}</th>`).join('')}</tr>`;
-            grid.innerHTML = '<tr><td colspan="10" style="text-align:center; padding:40px; font-weight:bold; color:#00a2ed;"><i class="fas fa-spinner fa-spin"></i> Fetching Live Roster from Cloud...</td></tr>';
-
-            const uniqueKey = "Roster_" + loc.replace(/[.#$\[\] ]/g, '_') + "_" + document.getElementById('rosterStartDate').value;
-            const disabledClass = currentRole === 'staff' ? 'staff-view-only' : '';
-
-            database.ref('rosters/' + uniqueKey).get().then((snapshot) => {
-                let savedData = [];
-                if (snapshot.exists()) {
-                    savedData = snapshot.val();
-                }
-                
-                grid.innerHTML = '';
-                
-                for(let i=0; i<14; i++) {
-                    let d = new Date(start); d.setDate(start.getDate() + i);
-                    let row = `<tr class="${disabledClass}">
-                        <td style="background:#f8fafc; text-align:center; vertical-align:middle;">
-                            <b style="font-size:14px; color:#1e293b;">${d.getDate()}-${d.toLocaleString('default',{month:'short'})}</b><br>
-                            <span style="color:#64748b; font-weight:600;">${d.toLocaleDateString('en-US',{weekday:'long'})}</span>
-                        </td>
-                        ${columns.map((val, cellIndex) => {
-                            let s = savedData && savedData[i] && savedData[i][cellIndex] ? savedData[i][cellIndex] : {};
-                            
-                            let currentTasks = [...TASK_LIST];
-                            if (val === "Shift 3" || val === "Mitch (1:1)") {
-                                currentTasks.push("Specialist Appointment");
-                            }
-
-                            return `<td>
-                                <div class="t-label">Start Time</div>
-                                <div class="time-flex"><select class="t-hr">${HR_OPTIONS.map(h => `<option ${h === (s.hr1 || 'Select') ? 'selected' : ''}>${h}</option>`).join('')}</select>
-                                <select class="t-ampm"><option ${s.ampm1 === 'AM' ? 'selected' : ''}>AM</option><option ${s.ampm1 === 'PM' ? 'selected' : ''}>PM</option></select></div>
-                                <div class="t-label">End Time</div>
-                                <div class="time-flex"><select class="t-hr2">${HR_OPTIONS.map(h => `<option ${h === (s.hr2 || 'Select') ? 'selected' : ''}>${h}</option>`).join('')}</select>
-                                <select class="t-ampm2"><option ${s.ampm2 === 'AM' ? 'selected' : ''}>AM</option><option ${s.ampm2 === 'PM' ? 'selected' : ''}>PM</option></select></div>
-                                <div class="divider"></div>
-                                <div class="t-label">Assign Staff</div>
-                                <select class="staff-select">${STAFF_LIST.map(n => `<option ${n === (s.staff || 'None') ? 'selected' : ''}>${n}</option>`).join('')}</select>
-                                <div class="t-label">Assign Task</div>
-                                <select class="task-select">${currentTasks.map(t => `<option ${t === (s.task || 'Select Task') ? 'selected' : ''}>${t}</option>`).join('')}</select>
-                            </td>`;
-                        }).join('')}
-                    </tr>`;
-                    grid.innerHTML += row;
-                }
-            }).catch((error) => {
-                grid.innerHTML = `<tr><td colspan="10" style="text-align:center; padding: 40px; color: red;"><b>Database Error:</b> Ensure Firebase Realtime Database 'Rules' are set to test mode (true).</td></tr>`;
-                console.error(error);
-            });
-        }
-
-        let targetSelectInput = null;
-
-        document.getElementById('rosterGrid').addEventListener('change', function(e) {
-            if (e.target.classList.contains('t-hr') || e.target.classList.contains('t-ampm') || 
-                e.target.classList.contains('t-hr2') || e.target.classList.contains('t-ampm2')) {
-                
-                let td = e.target.closest('td');
-                let hr1 = td.querySelector('.t-hr').value;
-                let ampm1 = td.querySelector('.t-ampm').value;
-                let hr2 = td.querySelector('.t-hr2').value;
-                let ampm2 = td.querySelector('.t-ampm2').value;
-
-                if (hr1 !== 'Select' && hr2 !== 'Select' && hr1.includes(':') && hr2.includes(':')) {
-                    let parseTime = (timeStr, ampm) => {
-                        let [h, m] = timeStr.split(':').map(Number);
-                        if (ampm === 'PM' && h !== 12) h += 12;
-                        if (ampm === 'AM' && h === 12) h = 0;
-                        return h + (m / 60);
-                    };
-
-                    let t1 = parseTime(hr1, ampm1);
-                    let t2 = parseTime(hr2, ampm2);
-                    let diff = t2 - t1;
-
-                    if (diff < 0) diff += 24; 
-
-                    if (diff > 10) {
-                        targetSelectInput = e.target; 
-                        document.getElementById('timeWarningText').innerHTML = `You are trying to set a shift that is <b>${diff.toFixed(1)} hours</b> long. This exceeds the 10-hour limit.<br><br>Do you want to update this shift?`;
-                        document.getElementById('timeWarningModal').style.display = 'flex';
-                    }
-                }
-            }
-        });
-
-        function closeTimeWarning(isYes) {
-            document.getElementById('timeWarningModal').style.display = 'none';
-            if (!isYes && targetSelectInput) {
-                targetSelectInput.value = 'Select'; 
-            }
-            targetSelectInput = null;
-        }
-
-        function saveRoster() {
-            if (currentRole === 'staff') return; 
-
-            const btn = document.getElementById('saveBtn');
-            const loc = document.getElementById('locationSelect').value;
-            const date = document.getElementById('rosterStartDate').value;
+        // 🚀 UI SETUP DYNAMICALLY BASED ON ROLE
+        if(activeUser) {
+            document.getElementById('displayAdminName').innerText = activeUser.name || activeUser.username;
             
-            btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Saving to Cloud...';
+            let currentRole = String(activeUser.role || '').toLowerCase();
+            let bClass = currentRole === 'admin' ? 'badge admin' : (currentRole === 'manager' ? 'badge manager' : 'badge staff');
+            document.getElementById('roleBadge').className = bClass;
+            document.getElementById('roleBadge').innerText = currentRole.toUpperCase();
+
+            // 🚀 STAFF RESTRICTIONS (Hiding menus and buttons)
+            if(currentRole === 'staff') {
+                document.getElementById('navHr').style.display = 'none'; // Hide HR
+                document.getElementById('fundingBlock').style.display = 'none'; // Hide NDIS Menu
+                document.getElementById('btnNdis').style.display = 'none'; // Hide Quick Link 1
+                document.getElementById('btnInvoice').style.display = 'none'; // Hide Quick Link 2
+            }
+        }
+
+        function toggleDropdown(id, el) {
+            document.getElementById(id).classList.toggle('open');
+            el.classList.toggle('open');
+        }
+
+        function switchTab(sectionId, element, isSubmenu = false) {
+            document.querySelectorAll('.app-section').forEach(sec => sec.classList.remove('active'));
+            document.getElementById(sectionId).classList.add('active');
+            
+            document.querySelectorAll('.nav-item').forEach(nav => nav.classList.remove('active'));
+            if (element) {
+                element.classList.add('active');
+            }
+            
+            if(!isSubmenu) {
+                document.getElementById('fundingDropdown').classList.remove('open');
+                document.getElementById('fundingMenuBtn').classList.remove('open');
+            } else {
+                document.getElementById('fundingMenuBtn').classList.add('active');
+                document.getElementById('fundingDropdown').classList.add('open');
+            }
+
+            const titleEl = document.getElementById('pageTitle');
+            if(sectionId === 'hrSection') { 
+                titleEl.innerText = 'HR - Manage Staff'; 
+                loadStaffDirectory(); 
+            } else if (sectionId === 'ndisSection') {
+                titleEl.innerText = 'Create NDIS Engagement';
+            } else { 
+                titleEl.innerText = 'Dashboard Overview'; 
+            }
+        }
+
+        // 🚀 LOGOUT FUNCTION UPDATED 
+        function logout() { 
+            localStorage.clear(); 
+            sessionStorage.clear(); // Yeh memory clean kar dega, taaki next login par welcome aaye
+            window.location.replace('crm-login.html'); 
+        }
+
+        // ==================== 🚀 HR SYSTEM (Admin Only) ====================
+        function createStaff() {
+            if (activeUser.role !== 'admin') {
+                alert("Access Denied: Only Admins can create new staff members.");
+                return;
+            }
+
+            const name = document.getElementById('staffName').value.trim();
+            const username = document.getElementById('staffUsername').value.trim().toLowerCase().replace(/\s/g, ''); 
+            const email = document.getElementById('staffEmail').value.trim();
+            const pass = document.getElementById('staffPassword').value.trim();
+            const role = document.getElementById('staffRole').value;
+
+            if(!name || !username || !pass) { 
+                alert("Please fill Name, Username, and Password fields!"); 
+                return; 
+            }
+
+            const btn = document.getElementById('createStaffBtn');
+            const originalText = btn.innerHTML;
+            btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Creating...';
             btn.disabled = true;
 
-            let data = [];
-            document.querySelectorAll('#rosterGrid tr').forEach(row => {
-                let rowData = [];
-                row.querySelectorAll('td').forEach((td, idx) => { 
-                    if(idx > 0) {
-                        rowData.push({ 
-                            hr1: td.querySelector('.t-hr').value, ampm1: td.querySelector('.t-ampm').value,
-                            hr2: td.querySelector('.t-hr2').value, ampm2: td.querySelector('.t-ampm2').value,
-                            staff: td.querySelector('.staff-select').value,
-                            task: td.querySelector('.task-select').value 
-                        });
-                    }
-                });
-                data.push(rowData);
-            });
+            const userData = { name: name, password: pass, role: role };
+            if (email) userData.email = email; // Optional Email Add
 
-            const uniqueKey = "Roster_" + loc.replace(/[.#$\[\] ]/g, '_') + "_" + date;
-
-            database.ref('rosters/' + uniqueKey).set(data)
-            .then(() => {
-                alert("Roster successfully saved to Cloud Database! ☁️✅");
-            })
-            .catch((error) => {
-                alert("Save Failed! Please check Firebase rules or internet connection.");
-                console.error(error);
-            })
-            .finally(() => {
-                btn.innerHTML = '<i class="fas fa-save"></i> Save Roster';
+            database.ref('users/' + username).set(userData).then(() => {
+                alert(`✅ User @${username} created successfully!`);
+                document.getElementById('staffName').value = ''; 
+                document.getElementById('staffUsername').value = ''; 
+                document.getElementById('staffEmail').value = ''; 
+                document.getElementById('staffPassword').value = '';
+                loadStaffDirectory(); 
+            }).catch((error) => {
+                alert("Error creating user: " + error.message);
+            }).finally(() => {
+                btn.innerHTML = originalText;
                 btn.disabled = false;
             });
         }
 
-        function exportToExcel() {
-            if (currentRole === 'staff') return;
-
-            const loc = document.getElementById('locationSelect').value;
-            const headers = Array.from(document.querySelectorAll('#rosterHeader th')).map(th => th.innerText);
-            let csv = `Location: ${loc}\n${headers.join(',')}\n`;
-            document.querySelectorAll('#rosterGrid tr').forEach(row => {
-                const cells = row.querySelectorAll('td');
-                let r = [`"${cells[0].innerText.replace(/\n/g,' ')}"`];
-                for(let i=1; i<cells.length; i++) {
-                    let td = cells[i];
-                    let hr1 = td.querySelector('.t-hr').value, ampm1 = td.querySelector('.t-ampm').value;
-                    let hr2 = td.querySelector('.t-hr2').value, ampm2 = td.querySelector('.t-ampm2').value;
-                    let s = td.querySelector('.staff-select').value, tsk = td.querySelector('.task-select').value;
-                    
-                    if(s !== "None") {
-                        let t = "";
-                        if (hr1 !== "Select" && hr2 !== "Select") t = `${hr1} ${ampm1} - ${hr2} ${ampm2}`;
-                        else if (hr1 !== "Select") t = `${hr1} ${ampm1}`;
-                        
-                        let parts = [s];
-                        if (tsk !== "Select Task") parts.push(tsk);
-                        if (t !== "") parts.push(`(${t})`);
-                        r.push(`"${parts.join(' ')}"`);
-                    } else r.push(`"-"`);
-                }
-                csv += r.join(',') + "\n";
-            });
-            const blob = new Blob([csv], { type: 'text/csv' });
-            const a = document.createElement('a'); a.href = URL.createObjectURL(blob); a.download = `Roster.csv`; a.click();
-        }
-
-        async function sendRosterEmail() {
-            if (currentRole === 'staff') return;
-
-            const btn = document.querySelector('.btn-publish');
-            const loc = document.getElementById('locationSelect').value;
-            const headers = Array.from(document.querySelectorAll('#rosterHeader th')).map(th => th.innerText);
+        function loadStaffDirectory() {
+            const tbody = document.getElementById('staffTableBody');
+            tbody.innerHTML = '<tr><td colspan="6" style="text-align:center;"><i class="fas fa-spinner fa-spin"></i> Fetching users...</td></tr>';
             
-            btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Preparing...'; 
-            btn.disabled = true;
-
-            let tableHtml = `
-            <div style="overflow-x: auto; max-width: 100%; margin: 0 auto;">
-                <table style="width:100%; min-width: 650px; border-collapse:collapse; font-size:13px; font-family: Arial, sans-serif; border:1px solid #ddd;">
-                    <tr style="background:#00a2ed; color:white;">
-                        ${headers.map(h => `<th style="padding:10px; border:1px solid #008ecc; white-space: nowrap;">${h}</th>`).join('')}
-                    </tr>`;
-
-            document.querySelectorAll('#rosterGrid tr').forEach(row => {
-                const cells = row.querySelectorAll('td');
-                let rData = `<tr><td style="padding:10px; border:1px solid #ddd; background:#f9f9f9; vertical-align:middle; white-space:nowrap;">${cells[0].innerText.replace(/\n/g, '<br>')}</td>`;
-                let hasEntry = false;
-
-                for(let i=1; i<cells.length; i++) {
-                    let td = cells[i];
-                    let hr1 = td.querySelector('.t-hr').value, ampm1 = td.querySelector('.t-ampm').value;
-                    let hr2 = td.querySelector('.t-hr2').value, ampm2 = td.querySelector('.t-ampm2').value;
-                    let s = td.querySelector('.staff-select').value, tsk = td.querySelector('.task-select').value;
-                    
-                    if(s !== "None") {
-                        let timeParts = [];
-                        if (hr1 && hr1 !== "Select") timeParts.push(`${hr1} ${ampm1}`);
-                        if (hr2 && hr2 !== "Select") timeParts.push(`${hr2} ${ampm2}`);
-                        let t = timeParts.join(' - ');
-
-                        let taskHtml = (!tsk || tsk === "Select Task") ? "" : `<div style="font-size:11px; margin-top:4px; color:#475569;">${tsk}</div>`;
-                        let timeHtml = (t === "") ? "" : `<div style="color:#00a2ed; font-weight:bold; font-size:11px; margin-top:4px;">${t}</div>`;
+            database.ref('users').once('value').then((snapshot) => {
+                tbody.innerHTML = '';
+                if(snapshot.exists()) {
+                    const users = snapshot.val();
+                    for(let uname in users) {
+                        let data = users[uname];
                         
-                        rData += `<td style="padding:10px; border:1px solid #ddd; text-align:center; vertical-align:middle;">
-                                    <strong style="font-size:13px; color:#1e293b;">${s}</strong>
-                                    ${taskHtml}
-                                    ${timeHtml}
-                                  </td>`;
-                        hasEntry = true;
-                    } else {
-                        rData += `<td style="padding:10px; border:1px solid #ddd; color:#cbd5e1; text-align:center; vertical-align:middle;">-</td>`;
-                    }
-                }
-                if(hasEntry) tableHtml += rData + `</tr>`;
-            });
-            tableHtml += `</table></div>`;
+                        let safeName = data.name || 'Unknown User';
+                        let safeEmail = data.email || '<span style="color:#cbd5e1; font-style:italic;">No Email Set</span>';
+                        let safePass = data.password || 'N/A';
+                        
+                        let rawRole = data.role ? String(data.role).toLowerCase() : 'staff';
+                        let displayRole = rawRole.toUpperCase();
+                        
+                        let badgeClass = 'badge staff';
+                        if(rawRole === 'admin') badgeClass = 'badge admin';
+                        if(rawRole === 'manager') badgeClass = 'badge manager';
 
-            try {
-                for (let i = 0; i < TEST_EMAILS.length; i++) {
-                    btn.innerHTML = `<i class="fas fa-spinner fa-spin"></i> Sending (${i + 1}/${TEST_EMAILS.length})...`;
-                    await emailjs.send(SERVICE_ID, TEMPLATE_ID, { 
-                        to_email: TEST_EMAILS[i], 
-                        message: "New Roster for " + loc, 
-                        roster_table: tableHtml 
-                    });
-                    
-                    if (i < TEST_EMAILS.length - 1) {
-                        await new Promise(resolve => setTimeout(resolve, 4000));
+                        let actionButtons = '';
+                        if (activeUser.role === 'admin') {
+                            actionButtons = `
+                                <div style="display:flex; gap:8px;">
+                                    <button onclick="resetPassword('${uname}')" style="background:#3b82f6; color:white; border:none; padding:6px 12px; border-radius:4px; cursor:pointer; font-weight:bold; font-size:11px;"><i class="fas fa-key"></i> Reset</button>
+                                    <button onclick="deleteStaff('${uname}')" style="background:#ef4444; color:white; border:none; padding:6px 12px; border-radius:4px; cursor:pointer; font-weight:bold; font-size:11px;"><i class="fas fa-trash"></i> Delete</button>
+                                </div>
+                            `;
+                        } else {
+                            actionButtons = `<span style="font-size:11px; color:#94a3b8; font-style:italic;">Admin Access Required</span>`;
+                        }
+                        
+                        tbody.innerHTML += `
+                        <tr>
+                            <td><strong>${safeName}</strong></td>
+                            <td style="color:#008ecc; font-weight:bold;">@${uname}</td>
+                            <td>${safeEmail}</td>
+                            <td><span class="${badgeClass}">${displayRole}</span></td>
+                            <td><span style="letter-spacing:2px; font-family:monospace; background:#f1f5f9; padding:4px 8px; border-radius:4px;">${safePass}</span></td>
+                            <td>${actionButtons}</td>
+                        </tr>`;
                     }
+                } else { 
+                    tbody.innerHTML = '<tr><td colspan="6" style="text-align:center; padding: 20px; color:#94a3b8;">No registered users found.</td></tr>'; 
                 }
-                alert('SUCCESS! Mails sent to all addresses 🚀'); 
-            } catch (err) {
-                alert('Error: ' + (err.text || 'Email failed.')); 
-            } finally {
-                btn.innerHTML = '<i class="fas fa-paper-plane"></i> Publish & Email'; 
-                btn.disabled = false; 
-            }
+            }).catch(error => {
+                tbody.innerHTML = `<tr><td colspan="6" style="text-align:center; color:red;"><i class="fas fa-exclamation-triangle"></i> Error loading data.</td></tr>`;
+            });
         }
+
+        window.resetPassword = function(username) {
+            if (activeUser.role !== 'admin') return alert("❌ Only Admins can reset passwords.");
+            const newPassword = prompt(`🔑 Enter new password for @${username}:`);
+            if(newPassword && newPassword.trim() !== '') {
+                database.ref('users/' + username).update({ password: newPassword.trim() }).then(() => {
+                    alert(`✅ Password updated for @${username}`); loadStaffDirectory();
+                });
+            }
+        };
+
+        window.deleteStaff = function(username) {
+            if (activeUser.role !== 'admin') return alert("❌ Only Admins can delete users.");
+            if(username === activeUser.username) return alert("❌ You cannot delete your own account!");
+            if(confirm(`⚠️ Are you sure you want to delete user '@${username}'?`)) {
+                database.ref('users/' + username).remove().then(() => {
+                    alert(`✅ User @${username} deleted.`); loadStaffDirectory();
+                });
+            }
+        };
 
         window.onload = function() {
-            buildGrid();
-            updateLiveClocks();
+            if(activeUser && (activeUser.role === 'admin' || activeUser.role === 'manager')) {
+                loadStaffDirectory();
+            }
+
+            // 🚀 SMART LINK REDIRECT LOGIC (Ye Roster page se aane par seedha Tab khol dega)
+            let target = localStorage.getItem('targetTab');
+            if(target) {
+                if(target === 'ndisSection') {
+                    switchTab('ndisSection', null, true);
+                } else if(target === 'hrSection') {
+                    switchTab('hrSection', document.getElementById('navHr'));
+                } else {
+                    switchTab('dashboardSection', document.querySelector('[onclick*="dashboardSection"]'));
+                }
+                // Redirect karne ke baad chitthi delete kardo
+                localStorage.removeItem('targetTab');
+            }
+
+            // 🚀 WELCOME MODAL LOGIC (Shows on every new login session)
+            if (!sessionStorage.getItem('hasSeenWelcome')) {
+                let userName = activeUser.name || activeUser.username;
+                document.getElementById('welcomeUserName').innerText = userName;
+                document.getElementById('welcomeModal').style.display = 'flex';
+                
+                sessionStorage.setItem('hasSeenWelcome', 'true');
+            }
         };
     </script>
 </body>
