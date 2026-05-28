@@ -7,7 +7,6 @@
         if (!activeUser) { 
             window.location.replace('crm-login.html'); 
         } 
-        // ❌ Yahan se Staff ko bahar nikalne wala code hata diya gaya hai taaki wo Chat dekh sakein
     </script>
 
     <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
@@ -78,9 +77,25 @@
         .badge.admin { background: #fee2e2; color: #b91c1c; }
         .badge.manager { background: #fef08a; color: #854d0e; }
         .badge.staff { background: #dcfce7; color: #15803d; }
+
+        /* 🚀 WELCOME MODAL ANIMATION */
+        @keyframes popIn { 
+            0% { transform: scale(0.8); opacity: 0; } 
+            100% { transform: scale(1); opacity: 1; } 
+        }
     </style>
 </head>
 <body>
+
+    <!-- 🚀 WELCOME POPUP MODAL -->
+    <div id="welcomeModal" style="display: none; position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: rgba(15, 23, 42, 0.7); z-index: 9999; align-items: center; justify-content: center; backdrop-filter: blur(4px);">
+        <div style="background: #fff; padding: 40px; border-radius: 20px; text-align: center; max-width: 400px; width: 90%; box-shadow: 0 20px 40px rgba(0,0,0,0.2); animation: popIn 0.5s ease;">
+            <img src="https://cdn-icons-png.flaticon.com/512/7936/7936922.png" alt="Welcome" style="width: 80px; margin-bottom: 20px;">
+            <h2 style="color: #1e293b; margin-bottom: 10px; font-weight: 800;">Welcome to CureAndCare!</h2>
+            <p style="color: #64748b; font-size: 15px; margin-bottom: 25px;">Hello <strong id="welcomeUserName" style="color: #00a2ed;">User</strong>, we are glad to have you here.</p>
+            <button onclick="document.getElementById('welcomeModal').style.display='none'" style="background: #00a2ed; color: white; border: none; padding: 12px 30px; border-radius: 10px; font-weight: 700; cursor: pointer; font-size: 15px; transition: 0.2s;">Let's Get Started <i class="fas fa-arrow-right" style="margin-left: 5px;"></i></button>
+        </div>
+    </div>
 
     <div class="sidebar">
         <div class="logo-area"><h2><i class="fas fa-heartbeat"></i> CureAndCare</h2></div>
@@ -281,7 +296,12 @@
             }
         }
 
-        function logout() { localStorage.clear(); window.location.replace('crm-login.html'); }
+        // 🚀 LOGOUT FUNCTION UPDATED 
+        function logout() { 
+            localStorage.clear(); 
+            sessionStorage.clear(); // Yeh memory clean kar dega, taaki next login par welcome aaye
+            window.location.replace('crm-login.html'); 
+        }
 
         // ==================== 🚀 HR SYSTEM (Admin Only) ====================
         function createStaff() {
@@ -399,6 +419,16 @@
         window.onload = function() {
             if(activeUser && (activeUser.role === 'admin' || activeUser.role === 'manager')) {
                 loadStaffDirectory();
+            }
+
+            // 🚀 WELCOME MODAL LOGIC (Shows on every new login session)
+            if (!sessionStorage.getItem('hasSeenWelcome')) {
+                let userName = activeUser.name || activeUser.username;
+                document.getElementById('welcomeUserName').innerText = userName;
+                document.getElementById('welcomeModal').style.display = 'flex';
+                
+                // Flag set kar diya taaki is session mein dobara refresh karne par na aaye
+                sessionStorage.setItem('hasSeenWelcome', 'true');
             }
         };
     </script>
