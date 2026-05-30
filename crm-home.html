@@ -114,7 +114,7 @@
                     <i class="fas fa-wallet"></i> FUNDING <i class="fas fa-chevron-down caret"></i>
                 </a>
                 <div class="dropdown-container" id="fundingDropdown" style="background:#fff; margin:0; padding:10px 15px; border-left:none;">
-                    <a href="#" class="nav-item" onclick="switchTab('ndisSection', this, true)"><i class="fas fa-file-contract"></i> Create NDIS & Services</a>
+                    <a href="crm-ndis.html" class="nav-item"><i class="fas fa-file-contract"></i> Open NDIS Workspace</a>
                     <a href="crm-invoice.html" class="nav-item"><i class="fas fa-file-invoice-dollar"></i> Invoice & Claims</a>
                 </div>
             </div>
@@ -149,36 +149,10 @@
                             <i class="fas fa-comments"></i> Open Team Chat
                         </button>
                         
-                        <button id="btnNdis" class="btn-action" onclick="document.getElementById('fundingMenuBtn').click(); switchTab('ndisSection', this, true);" style="width:100%; justify-content:center; background:#f8fafc; color:#1e293b; border:1px solid #cbd5e1;"><i class="fas fa-plus"></i> Open NDIS Module</button>
+                        <button id="btnNdis" class="btn-action" onclick="window.location.href='crm-ndis.html'" style="width:100%; justify-content:center; background:#f8fafc; color:#1e293b; border:1px solid #cbd5e1;"><i class="fas fa-external-link-alt"></i> Open NDIS Workspace</button>
                         <button id="btnInvoice" class="btn-action" onclick="window.location.href='crm-invoice.html'" style="width:100%; justify-content:center; background:#f8fafc; color:#1e293b; border:1px solid #cbd5e1;"><i class="fas fa-file-invoice"></i> Generate Invoices</button>
                         
                         <button class="btn-action" onclick="window.location.href='crm.html'" style="width:100%; justify-content:center; background:#f8fafc; color:#1e293b; border:1px solid #cbd5e1;"><i class="fas fa-calendar-alt"></i> Manage Shift Calendar</button>
-                    </div>
-                </div>
-            </div>
-        </div>
-
-        <div id="ndisSection" class="app-section">
-            <div class="panel" style="max-width: 1000px; margin: 0 auto;">
-                <div class="panel-header"><div class="panel-title"><i class="fas fa-hand-holding-medical" style="color:var(--primary);"></i> Create NDIS engagement</div></div>
-
-                <div class="form-section">
-                    <h3>Client information <span class="pace-badge">PACE</span></h3>
-                    <div class="input-group" style="margin-bottom:15px;">
-                        <label>Create new client or use existing client? *</label>
-                        <div class="radio-group"><label class="radio-label"><input type="radio" name="clientType" checked> Create new client</label><label class="radio-label"><input type="radio" name="clientType"> Use existing client</label></div>
-                    </div>
-                    <div class="input-group" style="margin-bottom:20px;">
-                        <label>Create as *</label>
-                        <div class="radio-group"><label class="radio-label"><input type="radio" name="createAs"> Client (multi-contact group)</label><label class="radio-label"><input type="radio" name="createAs" checked> Client (individual)</label></div>
-                    </div>
-                    <div class="form-grid">
-                        <div class="input-group"><label>NDIS number</label><input type="text" placeholder="Enter NDIS No."></div>
-                        <div class="input-group"><label>First name *</label><input type="text" placeholder="First Name"></div>
-                        <div class="input-group"><label>Last name *</label><input type="text" placeholder="Last Name"></div>
-                        <div class="input-group"><label>Phone 1</label><input type="text" placeholder="Phone 1"></div>
-                        <div class="input-group"><label>Email</label><input type="email" placeholder="Email Address"></div>
-                        <div class="input-group"><label>Date of birth</label><input type="date"></div>
                     </div>
                 </div>
             </div>
@@ -260,12 +234,12 @@
             document.getElementById('roleBadge').className = bClass;
             document.getElementById('roleBadge').innerText = currentRole.toUpperCase();
 
-            // 🚀 STAFF RESTRICTIONS (Hiding menus and buttons)
+            // 🚀 STAFF RESTRICTIONS
             if(currentRole === 'staff') {
-                document.getElementById('navHr').style.display = 'none'; // Hide HR
-                document.getElementById('fundingBlock').style.display = 'none'; // Hide NDIS Menu
-                document.getElementById('btnNdis').style.display = 'none'; // Hide Quick Link 1
-                document.getElementById('btnInvoice').style.display = 'none'; // Hide Quick Link 2
+                document.getElementById('navHr').style.display = 'none'; 
+                document.getElementById('fundingBlock').style.display = 'none'; 
+                document.getElementById('btnNdis').style.display = 'none'; 
+                document.getElementById('btnInvoice').style.display = 'none'; 
             }
         }
 
@@ -295,17 +269,14 @@
             if(sectionId === 'hrSection') { 
                 titleEl.innerText = 'HR - Manage Staff'; 
                 loadStaffDirectory(); 
-            } else if (sectionId === 'ndisSection') {
-                titleEl.innerText = 'Create NDIS Engagement';
             } else { 
                 titleEl.innerText = 'Dashboard Overview'; 
             }
         }
 
-        // 🚀 LOGOUT FUNCTION UPDATED 
         function logout() { 
             localStorage.clear(); 
-            sessionStorage.clear(); // Yeh memory clean kar dega, taaki next login par welcome aaye
+            sessionStorage.clear(); 
             window.location.replace('crm-login.html'); 
         }
 
@@ -333,7 +304,7 @@
             btn.disabled = true;
 
             const userData = { name: name, password: pass, role: role };
-            if (email) userData.email = email; // Optional Email Add
+            if (email) userData.email = email;
 
             database.ref('users/' + username).set(userData).then(() => {
                 alert(`✅ User @${username} created successfully!`);
@@ -427,26 +398,22 @@
                 loadStaffDirectory();
             }
 
-            // 🚀 SMART LINK REDIRECT LOGIC (Ye Roster page se aane par seedha Tab khol dega)
+            // 🚀 SMART LINK REDIRECT LOGIC
             let target = localStorage.getItem('targetTab');
             if(target) {
-                if(target === 'ndisSection') {
-                    switchTab('ndisSection', null, true);
-                } else if(target === 'hrSection') {
+                if(target === 'hrSection') {
                     switchTab('hrSection', document.getElementById('navHr'));
                 } else {
                     switchTab('dashboardSection', document.querySelector('[onclick*="dashboardSection"]'));
                 }
-                // Redirect karne ke baad chitthi delete kardo
                 localStorage.removeItem('targetTab');
             }
 
-            // 🚀 WELCOME MODAL LOGIC (Shows on every new login session)
+            // 🚀 WELCOME MODAL LOGIC
             if (!sessionStorage.getItem('hasSeenWelcome')) {
                 let userName = activeUser.name || activeUser.username;
                 document.getElementById('welcomeUserName').innerText = userName;
                 document.getElementById('welcomeModal').style.display = 'flex';
-                
                 sessionStorage.setItem('hasSeenWelcome', 'true');
             }
         };
