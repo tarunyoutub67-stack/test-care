@@ -32,7 +32,6 @@
         .nav-item:hover { background: #f1f5f9; color: var(--text-main); }
         .nav-item.active { background: rgba(0,162,237,0.1); color: var(--primary); border-left: 4px solid var(--primary); }
         
-        /* 🚀 NEW SIDEBAR CSS ADDED HERE */
         .nav-item .caret { margin-left: auto; transition: transform 0.3s; }
         .nav-item.open .caret { transform: rotate(180deg); }
         .dropdown-container { display: none; padding-left: 15px; margin-bottom: 10px; border-left: 2px solid #e2e8f0; margin-left: 20px; }
@@ -104,7 +103,6 @@
         </div>
     </div>
 
-    <!-- 🚀 UPDATED SIDEBAR -->
     <div class="sidebar">
         <div class="logo-area"><h2><i class="fas fa-heartbeat"></i> CureAndCare</h2></div>
         <div class="nav-menu">
@@ -115,13 +113,12 @@
                 <span style="background:#ef4444; color:#fff; font-size:9px; padding:2px 5px; border-radius:10px; margin-left:auto;">LIVE</span>
             </a>
 
-            <!-- FUNDING BLOCK MATCHING HOME PAGE -->
             <div id="fundingBlock" style="background:#e0f2fe; border: 1px solid #38bdf8; border-radius: 8px; margin: 10px 5px; overflow: hidden;">
                 <a href="#" class="nav-item" id="fundingMenuBtn" onclick="toggleDropdown('fundingDropdown', this)" style="color:#0284c7; font-weight:800;">
                     <i class="fas fa-wallet"></i> FUNDING <i class="fas fa-chevron-down caret"></i>
                 </a>
                 <div class="dropdown-container" id="fundingDropdown" style="background:#fff; margin:0; padding:10px 15px; border-left:none;">
-                    <a href="crm-home.html" onclick="localStorage.setItem('targetTab', 'ndisSection')" class="nav-item"><i class="fas fa-file-contract"></i> Create NDIS & Services</a>
+                    <a href="crm-ndis.html" class="nav-item"><i class="fas fa-file-contract"></i> Open NDIS Workspace</a>
                     <a href="crm-invoice.html" class="nav-item"><i class="fas fa-file-invoice-dollar"></i> Invoice & Claims</a>
                 </div>
             </div>
