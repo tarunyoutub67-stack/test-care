@@ -107,6 +107,7 @@
 </head>
 <body>
 
+    <!-- TIME WARNING MODAL -->
     <div class="modal-overlay" id="timeWarningModal">
         <div class="modal-box">
             <i class="fas fa-exclamation-circle" style="font-size: 55px; color: #ef4444; margin-bottom: 15px;"></i>
@@ -119,6 +120,30 @@
         </div>
     </div>
 
+    <!-- 🌟 EMAIL SELECTOR MODAL 🌟 -->
+    <div class="modal-overlay" id="emailModal">
+        <div class="modal-box" style="max-width: 450px; text-align: left; padding: 25px;">
+            <h3 style="margin-bottom: 15px; display:flex; justify-content:space-between; align-items:center; color:#0f172a;">
+                <span><i class="fas fa-envelope-open-text" style="color:#10b981;"></i> Select Recipients</span>
+                <span style="cursor:pointer; color:#ef4444; font-size:20px;" onclick="closeEmailModal()"><i class="fas fa-times-circle"></i></span>
+            </h3>
+            
+            <div style="display:flex; gap:10px; margin-bottom:15px;">
+                <input type="email" id="customEmailInput" placeholder="Add custom email..." class="select-input" style="flex:1;">
+                <button onclick="addCustomEmail()" class="btn btn-save" style="padding: 9px 15px; border-radius:8px;"><i class="fas fa-plus"></i> Add</button>
+            </div>
+
+            <div id="emailChecklist" style="max-height: 250px; overflow-y:auto; border:1px solid #cbd5e1; border-radius:8px; padding:15px; margin-bottom:20px; display:flex; flex-direction:column; gap:12px; background:#f8fafc;">
+                <!-- JS WILL RENDER CHECKBOXES HERE -->
+            </div>
+
+            <button id="finalSendBtn" class="btn btn-publish" style="width:100%; justify-content:center; padding:12px; font-size:15px;" onclick="executeSendEmail()">
+                <i class="fas fa-paper-plane"></i> Send Mail to Selected
+            </button>
+        </div>
+    </div>
+
+    <!-- SIDEBAR -->
     <div class="sidebar">
         <div class="logo-area"><h2><i class="fas fa-heartbeat"></i> CureAndCare</h2></div>
         <div class="nav-menu">
@@ -174,7 +199,8 @@
                 <div id="actionButtons" style="display:flex; gap:10px;">
                     <button class="btn btn-save" id="saveBtn" onclick="saveRoster()"><i class="fas fa-save"></i> Save Roster</button>
                     <button class="btn btn-excel" id="excelBtn" onclick="exportToExcel()"><i class="fas fa-file-excel"></i> Export Excel</button>
-                    <button class="btn btn-publish" id="publishBtn" onclick="sendRosterEmail()"><i class="fas fa-paper-plane"></i> Publish & Email</button>
+                    <!-- 🌟 Publish Button Opens Modal Now 🌟 -->
+                    <button class="btn btn-publish" id="publishBtn" onclick="openEmailModal()"><i class="fas fa-paper-plane"></i> Publish & Email</button>
                 </div>
             </div>
 
@@ -227,8 +253,17 @@
         const SERVICE_ID = "service_adqy43h";
         const TEMPLATE_ID = "template_gb0v9d9"; 
         
-        const TEST_EMAILS = [
+        // 🌟 DEFAULT EMAIL LIST 🌟
+        let defaultEmailList = [
+            "niteshkalia54@gmail.com",
+            "nayswart@gmail.com",
+            "marceloasaramos31@gmail.com",
+            "kaptingeit@yahoo.com",
+            "498876729@qq.com",
+            "accounts@cureandcare.com.au",
+            "admin@cureandcare.com.au",
             "starunsharma67@gmail.com",
+            "ayushsydney@gmail.com"
         ];
         
         const STAFF_LIST = ["None", "Ankit", "Bubble", "Rene", "Titus", "Marcelo", "Nitesh"];
@@ -255,6 +290,45 @@
             "12-26": "Boxing Day",
             "12-28": "Additional Boxing Day"
         };
+
+        // 🌟 EMAIL MODAL FUNCTIONS 🌟
+        function openEmailModal() {
+            if (currentRole === 'staff') return;
+            document.getElementById('emailModal').style.display = 'flex';
+            renderEmailChecklist();
+        }
+
+        function closeEmailModal() {
+            document.getElementById('emailModal').style.display = 'none';
+        }
+
+        function renderEmailChecklist() {
+            const container = document.getElementById('emailChecklist');
+            container.innerHTML = '';
+            defaultEmailList.forEach((email) => {
+                container.innerHTML += `
+                    <label style="display:flex; align-items:center; gap:12px; cursor:pointer; font-size:14px; color:#1e293b; font-weight:600;">
+                        <input type="checkbox" value="${email}" class="email-checkbox" checked style="width:16px; height:16px; cursor:pointer;">
+                        ${email}
+                    </label>
+                `;
+            });
+        }
+
+        function addCustomEmail() {
+            let input = document.getElementById('customEmailInput');
+            let newEmail = input.value.trim().toLowerCase();
+            
+            if(newEmail && newEmail.includes('@') && newEmail.includes('.')) {
+                if(!defaultEmailList.includes(newEmail)) {
+                    defaultEmailList.unshift(newEmail); // Adds to the top of the list
+                    renderEmailChecklist();
+                }
+                input.value = '';
+            } else {
+                alert('Please enter a valid email address!');
+            }
+        }
 
         function updateLiveClocks() {
             const now = new Date();
@@ -462,15 +536,21 @@
             const a = document.createElement('a'); a.href = URL.createObjectURL(blob); a.download = `Roster.csv`; a.click();
         }
 
-        // 🌟 UPDATED EMAIL FUNCTION FOR PERFECT LAYOUT MATCHING THE IMAGE 🌟
-        async function sendRosterEmail() {
-            if (currentRole === 'staff') return;
+        // 🌟 TRIGGERED FROM INSIDE THE MODAL 🌟
+        async function executeSendEmail() {
+            let checkedBoxes = document.querySelectorAll('.email-checkbox:checked');
+            let selectedEmails = Array.from(checkedBoxes).map(cb => cb.value);
 
-            const btn = document.querySelector('.btn-publish');
+            if(selectedEmails.length === 0) {
+                alert("Please select at least one email address!");
+                return;
+            }
+
+            const btn = document.getElementById('finalSendBtn');
             const loc = document.getElementById('locationSelect').value;
             const headers = Array.from(document.querySelectorAll('#rosterHeader th')).map(th => th.innerText);
             
-            btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Preparing...'; 
+            btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Preparing Format...'; 
             btn.disabled = true;
 
             let tableHtml = `
@@ -484,7 +564,6 @@
                 const cells = row.querySelectorAll('td');
                 if(cells.length < 2) return; 
 
-                // Process Date / Day Column
                 let bElement = cells[0].querySelector('b');
                 let spanElement = cells[0].querySelector('span');
                 
@@ -499,7 +578,6 @@
                     dateEmailHtml += `<br><br><span style="text-transform:uppercase; font-size:12px; color:#333;">${holidayName}</span><br><b style="color:#0066cc; font-size:13px;">Public Holiday</b>`;
                 }
 
-                // Table Row Design for Email
                 let rData = `<tr><td style="padding:10px; border:1px solid #ccc; background:#dce9f4; vertical-align:middle; white-space:nowrap; text-align:left;">${dateEmailHtml}</td>`;
                 let hasEntry = false;
 
@@ -515,7 +593,6 @@
                         if (hr2 && hr2 !== "Select") timeParts.push(`${hr2} ${ampm2}`);
                         let t = timeParts.join(' - ');
 
-                        // 🌟 Ordered correctly: Name -> Time -> Task 🌟
                         let timeHtml = (t === "") ? "" : `<br><span style="color:#0066cc; font-size:12px;">${t}</span>`;
                         let taskHtml = (!tsk || tsk === "Select Task") ? "" : `<br><span style="font-size:12px; color:#333;">${tsk}</span>`;
                         
@@ -534,23 +611,24 @@
             tableHtml += `</table></div>`;
 
             try {
-                for (let i = 0; i < TEST_EMAILS.length; i++) {
-                    btn.innerHTML = `<i class="fas fa-spinner fa-spin"></i> Sending (${i + 1}/${TEST_EMAILS.length})...`;
+                for (let i = 0; i < selectedEmails.length; i++) {
+                    btn.innerHTML = `<i class="fas fa-spinner fa-spin"></i> Sending (${i + 1}/${selectedEmails.length})...`;
                     await emailjs.send(SERVICE_ID, TEMPLATE_ID, { 
-                        to_email: TEST_EMAILS[i], 
+                        to_email: selectedEmails[i], 
                         message: "New Roster for " + loc, 
                         roster_table: tableHtml 
                     });
                     
-                    if (i < TEST_EMAILS.length - 1) {
+                    if (i < selectedEmails.length - 1) {
                         await new Promise(resolve => setTimeout(resolve, 4000));
                     }
                 }
-                alert('SUCCESS! Mails sent to all addresses 🚀'); 
+                alert('SUCCESS! Mails sent to selected addresses 🚀'); 
+                closeEmailModal(); // Close modal upon success
             } catch (err) {
                 alert('Error: ' + (err.text || 'Email failed.')); 
             } finally {
-                btn.innerHTML = '<i class="fas fa-paper-plane"></i> Publish & Email'; 
+                btn.innerHTML = '<i class="fas fa-paper-plane"></i> Send Mail to Selected'; 
                 btn.disabled = false; 
             }
         }
