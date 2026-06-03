@@ -119,6 +119,7 @@
         </div>
     </div>
 
+    <!-- SIDEBAR -->
     <div class="sidebar">
         <div class="logo-area"><h2><i class="fas fa-heartbeat"></i> CureAndCare</h2></div>
         <div class="nav-menu">
@@ -468,6 +469,7 @@
             const a = document.createElement('a'); a.href = URL.createObjectURL(blob); a.download = `Roster.csv`; a.click();
         }
 
+        // 🌟🌟🌟 COMPLETELY RE-WRITTEN EMAIL FUNCTION TO FIX THE LAYOUT 🌟🌟🌟
         async function sendRosterEmail() {
             if (currentRole === 'staff') return;
 
@@ -479,27 +481,30 @@
             btn.disabled = true;
 
             let tableHtml = `
-            <div style="overflow-x: auto; max-width: 100%; margin: 0 auto;">
-                <table style="width:100%; min-width: 650px; border-collapse:collapse; font-size:13px; font-family: Arial, sans-serif; border:1px solid #ddd;">
-                    <tr style="background:#00a2ed; color:white;">
-                        ${headers.map(h => `<th style="padding:10px; border:1px solid #008ecc; white-space: nowrap;">${h}</th>`).join('')}
-                    </tr>`;
+            <table style="width:100%; min-width: 650px; border-collapse:collapse; font-size:13px; font-family: Arial, sans-serif; border:1px solid #ddd;">
+                <thead>
+                    <tr style="background-color: #00a2ed; color: #ffffff;">
+                        ${headers.map(h => `<th style="padding:12px 10px; border: 1px solid #008ecc; text-align:center; font-weight:bold;">${h}</th>`).join('')}
+                    </tr>
+                </thead>
+                <tbody>`;
 
             document.querySelectorAll('#rosterGrid tr').forEach(row => {
                 const cells = row.querySelectorAll('td');
                 
-                // 🌟 Custom Date Cell parsing for exact email output 🌟
+                // Get Date Info
                 let dayDateText = cells[0].querySelector('b').innerText;
                 let weekdayText = cells[0].querySelector('span').innerText;
                 let holidayTag = cells[0].querySelector('.holiday-alert-tag');
                 
-                let dateEmailHtml = `${dayDateText}<br>${weekdayText}`;
-                if(holidayTag) {
-                    let holidayName = holidayTag.innerText.replace('★ ', '').trim();
-                    dateEmailHtml += `<br><span style="text-transform:uppercase;">${holidayName}</span><br><b style="color:#008ecc;">Public Holiday</b>`;
+                let dateContent = `<span style="color:#333;">${dayDateText}</span><br><span style="color:#555;">${weekdayText}</span>`;
+                
+                if (holidayTag) {
+                    let hName = holidayTag.innerText.replace('★', '').trim();
+                    dateContent += `<br><br><span style="text-transform:uppercase; color:#333; font-size:11px;">${hName}</span><br><strong style="color:#00a2ed; font-size:13px;">Public Holiday</strong>`;
                 }
 
-                let rData = `<tr><td style="padding:10px; border:1px solid #ddd; background:#f9f9f9; vertical-align:middle; white-space:nowrap;">${dateEmailHtml}</td>`;
+                let rData = `<tr><td style="padding:15px 10px; border:1px solid #ddd; background:#f8fafc; vertical-align:top; text-align:left;">${dateContent}</td>`;
                 let hasEntry = false;
 
                 for(let i=1; i<cells.length; i++) {
@@ -514,23 +519,25 @@
                         if (hr2 && hr2 !== "Select") timeParts.push(`${hr2} ${ampm2}`);
                         let t = timeParts.join(' - ');
 
-                        // 🌟 Order Swapped: Time first, Task second for Email 🌟
-                        let timeHtml = (t === "") ? "" : `<div style="color:#00a2ed; font-weight:bold; font-size:12px; margin-top:4px;">${t}</div>`;
-                        let taskHtml = (!tsk || tsk === "Select Task") ? "" : `<div style="font-size:12px; margin-top:4px; color:#475569;">${tsk}</div>`;
+                        // Layout: Name -> Time -> Task
+                        let cellHtml = `<strong style="font-size:14px; color:#1e293b;">${s}</strong>`;
                         
-                        rData += `<td style="padding:10px; border:1px solid #ddd; text-align:center; vertical-align:middle;">
-                                    <strong style="font-size:14px; color:#1e293b;">${s}</strong>
-                                    ${timeHtml}
-                                    ${taskHtml}
-                                  </td>`;
+                        if(t !== "") {
+                            cellHtml += `<br><strong style="color:#00a2ed; font-size:12px;">${t}</strong>`;
+                        }
+                        if(tsk && tsk !== "Select Task") {
+                            cellHtml += `<br><span style="color:#64748b; font-size:12px;">${tsk}</span>`;
+                        }
+                        
+                        rData += `<td style="padding:15px 10px; border:1px solid #ddd; text-align:center; vertical-align:middle; background:#ffffff;">${cellHtml}</td>`;
                         hasEntry = true;
                     } else {
-                        rData += `<td style="padding:10px; border:1px solid #ddd; color:#cbd5e1; text-align:center; vertical-align:middle;">-</td>`;
+                        rData += `<td style="padding:15px 10px; border:1px solid #ddd; text-align:center; vertical-align:middle; color:#cbd5e1; background:#ffffff;">-</td>`;
                     }
                 }
                 if(hasEntry) tableHtml += rData + `</tr>`;
             });
-            tableHtml += `</table></div>`;
+            tableHtml += `</tbody></table>`;
 
             try {
                 for (let i = 0; i < TEST_EMAILS.length; i++) {
