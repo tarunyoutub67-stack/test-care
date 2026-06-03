@@ -102,4 +102,541 @@
         .btn-yes { background: #10b981; color: white; }
         .btn-yes:hover { background: #059669; }
         .btn-no { background: #ef4444; color: white; }
-        .
+        .btn-no:hover { background: #dc2626; }
+    </style>
+</head>
+<body>
+
+    <div class="modal-overlay" id="timeWarningModal">
+        <div class="modal-box">
+            <i class="fas fa-exclamation-circle" style="font-size: 55px; color: #ef4444; margin-bottom: 15px;"></i>
+            <h3 style="color: #1e293b; margin-bottom: 10px; font-weight: 800;">Overtime Warning!</h3>
+            <p id="timeWarningText" style="color: #64748b; font-size: 14px; margin-bottom: 25px; line-height: 1.5;"></p>
+            <div style="display: flex; gap: 15px;">
+                <button class="modal-btn btn-no" onclick="closeTimeWarning(false)">No</button>
+                <button class="modal-btn btn-yes" onclick="closeTimeWarning(true)">Yes, Update</button>
+            </div>
+        </div>
+    </div>
+
+    <div class="modal-overlay" id="emailModal">
+        <div class="modal-box" style="max-width: 450px; text-align: left; padding: 25px;">
+            <h3 style="margin-bottom: 15px; display:flex; justify-content:space-between; align-items:center; color:#0f172a;">
+                <span><i class="fas fa-envelope-open-text" style="color:#10b981;"></i> Select Recipients</span>
+                <span style="cursor:pointer; color:#ef4444; font-size:20px;" onclick="closeEmailModal()"><i class="fas fa-times-circle"></i></span>
+            </h3>
+            
+            <div style="display:flex; gap:10px; margin-bottom:15px;">
+                <input type="email" id="customEmailInput" placeholder="Add custom email..." class="select-input" style="flex:1;">
+                <button onclick="addCustomEmail()" class="btn btn-save" style="padding: 9px 15px; border-radius:8px;"><i class="fas fa-plus"></i> Add</button>
+            </div>
+
+            <div id="emailChecklist" style="max-height: 250px; overflow-y:auto; border:1px solid #cbd5e1; border-radius:8px; padding:15px; margin-bottom:20px; display:flex; flex-direction:column; gap:12px; background:#f8fafc;">
+                </div>
+
+            <button id="finalSendBtn" class="btn btn-publish" style="width:100%; justify-content:center; padding:12px; font-size:15px;" onclick="executeSendEmail()">
+                <i class="fas fa-paper-plane"></i> Send Mail to Selected
+            </button>
+        </div>
+    </div>
+
+    <div class="sidebar">
+        <div class="logo-area"><h2><i class="fas fa-heartbeat"></i> CureAndCare</h2></div>
+        <div class="nav-menu">
+            <a href="crm-home.html" onclick="localStorage.setItem('targetTab', 'dashboardSection')" class="nav-item"><i class="fas fa-home"></i> Dashboard</a>
+            
+            <a href="crm-chat.html" class="nav-item" style="color: #00a2ed; font-weight: 800; background: #e0f2fe; border: 1px solid #7dd3fc; margin: 10px 5px;">
+                <i class="fas fa-comments"></i> Team Chat 
+                <span style="background:#ef4444; color:#fff; font-size:9px; padding:2px 5px; border-radius:10px; margin-left:auto;">LIVE</span>
+            </a>
+
+            <div id="fundingBlock" style="background:#e0f2fe; border: 1px solid #38bdf8; border-radius: 8px; margin: 10px 5px; overflow: hidden;">
+                <a href="#" class="nav-item" id="fundingMenuBtn" onclick="toggleDropdown('fundingDropdown', this)" style="color:#0284c7; font-weight:800;">
+                    <i class="fas fa-wallet"></i> FUNDING <i class="fas fa-chevron-down caret"></i>
+                </a>
+                <div class="dropdown-container" id="fundingDropdown" style="background:#fff; margin:0; padding:10px 15px; border-left:none;">
+                    <a href="crm-home.html" onclick="localStorage.setItem('targetTab', 'ndisSection')" class="nav-item"><i class="fas fa-file-contract"></i> Create NDIS & Services</a>
+                    <a href="crm-invoice.html" class="nav-item"><i class="fas fa-file-invoice-dollar"></i> Invoice & Claims</a>
+                </div>
+            </div>
+
+            <a class="nav-item active"><i class="fas fa-calendar-alt"></i> Time & Attendance (Roster)</a>
+            <a href="crm-home.html" onclick="localStorage.setItem('targetTab', 'hrSection')" class="nav-item" id="navHr"><i class="fas fa-users-cog"></i> HR (Manage Staff)</a>
+        </div>
+    </div>
+
+    <div class="main-content">
+        <header class="top-header">
+            <div class="page-title">Shift Roster Management <span class="cloud-badge"><i class="fas fa-cloud"></i> Cloud Synced</span></div>
+
+            <div class="live-clocks">
+                <div class="clock-badge">🇮🇳 IND: <span id="timeIND">--:--:--</span></div>
+                <div class="clock-badge">🇦🇺 AUS: <span id="timeAUS">--:--:--</span></div>
+            </div>
+
+            <div class="user-profile">
+                <i class="fas fa-user-circle" style="font-size:18px; color:var(--primary);"></i> 
+                Hi, <span id="displayStaffName">Staff</span>
+                <button onclick="localStorage.clear(); sessionStorage.clear(); window.location.replace('crm-login.html');" style="background:#ef4444; color:#fff; border:none; padding:6px 12px; border-radius:6px; cursor:pointer; font-weight:700; font-size:11px; margin-left:10px;">Logout</button>
+            </div>
+        </header>
+
+        <div class="roster-view">
+            <div class="toolbar">
+                <div style="display:flex; gap:15px; align-items:center;">
+                    <select id="locationSelect" class="select-input" onchange="buildGrid()" style="width:320px;">
+                        <option>27 Clearview Crescent Orange NSW 2800</option>
+                        <option>27A Clearview Crescent Orange NSW 2800</option>
+                        <option>7 Gilroy Place Orange NSW 2800</option>
+                    </select>
+                    <input type="date" id="rosterStartDate" value="2026-04-01" onchange="buildGrid()" class="select-input">
+                </div>
+                
+                <div id="actionButtons" style="display:flex; gap:10px;">
+                    <button class="btn btn-save" id="saveBtn" onclick="saveRoster()"><i class="fas fa-save"></i> Save Roster</button>
+                    <button class="btn btn-excel" id="excelBtn" onclick="exportToExcel()"><i class="fas fa-file-excel"></i> Export Excel</button>
+                    <button class="btn btn-publish" id="publishBtn" onclick="openEmailModal()"><i class="fas fa-paper-plane"></i> Publish & Email</button>
+                </div>
+            </div>
+
+            <table class="excel-table">
+                <thead id="rosterHeader"></thead>
+                <tbody id="rosterGrid"></tbody>
+            </table>
+        </div>
+
+        <footer class="crm-footer">
+            Copyright © 2026 cure and care | Designed by <span>skywebsolutions.in</span>
+        </footer>
+
+    </div>
+
+    <script>
+        function toggleDropdown(id, el) {
+            document.getElementById(id).classList.toggle('open');
+            el.classList.toggle('open');
+        }
+
+        let currentRole = 'staff'; 
+        if(activeUser) {
+            document.getElementById('displayStaffName').innerText = activeUser.name || activeUser.username;
+            currentRole = String(activeUser.role || '').toLowerCase().trim();
+            
+            if (currentRole === 'staff') {
+                if(document.getElementById('fundingBlock')) document.getElementById('fundingBlock').style.display = 'none';
+                if(document.getElementById('navHr')) document.getElementById('navHr').style.display = 'none';
+                if(document.getElementById('actionButtons')) document.getElementById('actionButtons').style.display = 'none'; 
+                
+                if(document.getElementById('saveBtn')) document.getElementById('saveBtn').style.display = 'none';
+                if(document.getElementById('excelBtn')) document.getElementById('excelBtn').style.display = 'none';
+                if(document.getElementById('publishBtn')) document.getElementById('publishBtn').style.display = 'none';
+            }
+        }
+
+        const firebaseConfig = {
+            apiKey: "AIzaSyC-Ito4dNRQ45IjIOWL63Hqk9sKzbvKe-M",
+            authDomain: "cureandcare-crm.firebaseapp.com",
+            databaseURL: "https://cureandcare-crm-default-rtdb.firebaseio.com",
+            projectId: "cureandcare-crm",
+            storageBucket: "cureandcare-crm.firebasestorage.app",
+            messagingSenderId: "294207622967",
+            appId: "1:294207622967:web:59846c2cf1b463cb21d4b2"
+        };
+        firebase.initializeApp(firebaseConfig);
+        const database = firebase.database();
+
+        const SERVICE_ID = "service_adqy43h";
+        const TEMPLATE_ID = "template_gb0v9d9"; 
+        
+        // 🌟 DEFAULT EMAIL LIST 🌟
+        let defaultEmailList = [
+            "niteshkalia54@gmail.com",
+            "nayswart@gmail.com",
+            "marceloasaramos31@gmail.com",
+            "kaptingeit@yahoo.com",
+            "498876729@qq.com",
+            "accounts@cureandcare.com.au",
+            "admin@cureandcare.com.au",
+            "starunsharma67@gmail.com",
+            "ayushsydney@gmail.com"
+        ];
+        
+        const STAFF_LIST = ["None", "Ankit", "Bubble", "Rene", "Titus", "Marcelo", "Nitesh"];
+        const TASK_LIST = ["Select Task", "1:1 Support", "Community Participation", "Morning Shift", "Sleepover", "Awake Night"];
+        const HR_OPTIONS = [
+            "Select", "12:00", "12:30", "01:00", "01:30", "02:00", "02:30", 
+            "03:00", "03:30", "04:00", "04:30", "05:00", "05:30", "06:00", 
+            "06:30", "07:00", "07:30", "08:00", "08:30", "09:00", "09:30", 
+            "10:00", "10:30", "11:00", "11:30", "Sleepover", "Leave", "Sick", "Training"
+        ];
+
+        const nswPublicHolidays = {
+            "01-01": "New Year's Day",
+            "01-26": "Australia Day",
+            "04-03": "Good Friday",
+            "04-04": "Easter Saturday",
+            "04-05": "Easter Sunday",
+            "04-06": "Easter Monday",
+            "04-25": "Anzac Day",
+            "04-27": "Additional Anzac Day",
+            "06-08": "King's Birthday",
+            "10-05": "Labour Day",
+            "12-25": "Christmas Day",
+            "12-26": "Boxing Day",
+            "12-28": "Additional Boxing Day"
+        };
+
+        function openEmailModal() {
+            if (currentRole === 'staff') return;
+            document.getElementById('emailModal').style.display = 'flex';
+            renderEmailChecklist();
+        }
+
+        function closeEmailModal() {
+            document.getElementById('emailModal').style.display = 'none';
+        }
+
+        function renderEmailChecklist() {
+            const container = document.getElementById('emailChecklist');
+            container.innerHTML = '';
+            defaultEmailList.forEach((email) => {
+                container.innerHTML += `
+                    <label style="display:flex; align-items:center; gap:12px; cursor:pointer; font-size:14px; color:#1e293b; font-weight:600;">
+                        <input type="checkbox" value="${email}" class="email-checkbox" checked style="width:16px; height:16px; cursor:pointer;">
+                        ${email}
+                    </label>
+                `;
+            });
+        }
+
+        function addCustomEmail() {
+            let input = document.getElementById('customEmailInput');
+            let newEmail = input.value.trim().toLowerCase();
+            
+            if(newEmail && newEmail.includes('@') && newEmail.includes('.')) {
+                if(!defaultEmailList.includes(newEmail)) {
+                    defaultEmailList.unshift(newEmail);
+                    renderEmailChecklist();
+                }
+                input.value = '';
+            } else {
+                alert('Please enter a valid email address!');
+            }
+        }
+
+        function updateLiveClocks() {
+            const now = new Date();
+            const options = { hour: '2-digit', minute: '2-digit', second: '2-digit', hour12: true };
+            document.getElementById('timeIND').innerText = new Intl.DateTimeFormat('en-US', { ...options, timeZone: 'Asia/Kolkata' }).format(now);
+            document.getElementById('timeAUS').innerText = new Intl.DateTimeFormat('en-US', { ...options, timeZone: 'Australia/Sydney' }).format(now);
+        }
+        setInterval(updateLiveClocks, 1000);
+
+        function buildGrid() {
+            const loc = document.getElementById('locationSelect').value;
+            const start = new Date(document.getElementById('rosterStartDate').value);
+            const grid = document.getElementById('rosterGrid');
+            const header = document.getElementById('rosterHeader');
+
+            let columns = [];
+            if(loc.includes("27A")) {
+                columns = ["Shift 1", "Shift 2", "Craig Calleja (Home Support)"];
+            } else {
+                columns = ["Shift 1", "Shift 2", "Shift 3", "Mitch (1:1)", "Steve's Home alone hours"];
+            }
+
+            header.innerHTML = `<tr><th width="120">Date / Day</th>${columns.map(c => `<th>${c}</th>`).join('')}</tr>`;
+            grid.innerHTML = '<tr><td colspan="10" style="text-align:center; padding:40px; font-weight:bold; color:#00a2ed;"><i class="fas fa-spinner fa-spin"></i> Fetching Live Roster from Cloud...</td></tr>';
+
+            const uniqueKey = "Roster_" + loc.replace(/[.#$\[\] ]/g, '_') + "_" + document.getElementById('rosterStartDate').value;
+            const disabledClass = currentRole === 'staff' ? 'staff-view-only' : '';
+
+            database.ref('rosters/' + uniqueKey).get().then((snapshot) => {
+                let savedData = [];
+                if (snapshot.exists()) {
+                    savedData = snapshot.val();
+                }
+                
+                grid.innerHTML = '';
+                
+                for(let i=0; i<14; i++) {
+                    let d = new Date(start); d.setDate(start.getDate() + i);
+                    
+                    let currentMonthStr = (d.getMonth() + 1).toString().padStart(2, '0');
+                    let currentDayStr = d.getDate().toString().padStart(2, '0');
+                    let dayLookupKey = `${currentMonthStr}-${currentDayStr}`;
+                    
+                    let rowClass = disabledClass;
+                    let holidayBadgeHtml = "";
+                    let tdBg = "#f8fafc";
+                    
+                    if(nswPublicHolidays[dayLookupKey]) {
+                        rowClass += " roster-holiday-row";
+                        holidayBadgeHtml = `<div class="holiday-alert-tag"><i class="fas fa-star"></i> ${nswPublicHolidays[dayLookupKey]}</div>`;
+                        tdBg = "transparent";
+                    }
+
+                    let row = `<tr class="${rowClass}">
+                        <td style="background:${tdBg}; text-align:center; vertical-align:middle;">
+                            <b style="font-size:14px; color:#1e293b;">${d.getDate()}-${d.toLocaleString('default',{month:'short'})}</b><br>
+                            <span style="color:#64748b; font-weight:600;">${d.toLocaleDateString('en-US',{weekday:'long'})}</span>
+                            ${holidayBadgeHtml}
+                        </td>
+                        ${columns.map((val, cellIndex) => {
+                            let s = savedData && savedData[i] && savedData[i][cellIndex] ? savedData[i][cellIndex] : {};
+                            
+                            let currentTasks = [...TASK_LIST];
+                            if (val === "Shift 3" || val === "Mitch (1:1)") {
+                                currentTasks.push("Specialist Appointment");
+                            }
+
+                            return `<td>
+                                <div class="t-label">Start Time</div>
+                                <div class="time-flex"><select class="t-hr">${HR_OPTIONS.map(h => `<option ${h === (s.hr1 || 'Select') ? 'selected' : ''}>${h}</option>`).join('')}</select>
+                                <select class="t-ampm"><option ${s.ampm1 === 'AM' ? 'selected' : ''}>AM</option><option ${s.ampm1 === 'PM' ? 'selected' : ''}>PM</option></select></div>
+                                <div class="t-label">End Time</div>
+                                <div class="time-flex"><select class="t-hr2">${HR_OPTIONS.map(h => `<option ${h === (s.hr2 || 'Select') ? 'selected' : ''}>${h}</option>`).join('')}</select>
+                                <select class="t-ampm2"><option ${s.ampm2 === 'AM' ? 'selected' : ''}>AM</option><option ${s.ampm2 === 'PM' ? 'selected' : ''}>PM</option></select></div>
+                                <div class="divider"></div>
+                                <div class="t-label">Assign Staff</div>
+                                <select class="staff-select">${STAFF_LIST.map(n => `<option ${n === (s.staff || 'None') ? 'selected' : ''}>${n}</option>`).join('')}</select>
+                                <div class="t-label">Assign Task</div>
+                                <select class="task-select">${currentTasks.map(t => `<option ${t === (s.task || 'Select Task') ? 'selected' : ''}>${t}</option>`).join('')}</select>
+                            </td>`;
+                        }).join('')}
+                    </tr>`;
+                    grid.innerHTML += row;
+                }
+            }).catch((error) => {
+                grid.innerHTML = `<tr><td colspan="10" style="text-align:center; padding: 40px; color: red;"><b>Database Error:</b> Ensure Firebase Realtime Database 'Rules' are set to test mode (true).</td></tr>`;
+                console.error(error);
+            });
+        }
+
+        let targetSelectInput = null;
+
+        document.getElementById('rosterGrid').addEventListener('change', function(e) {
+            if (e.target.classList.contains('t-hr') || e.target.classList.contains('t-ampm') || 
+                e.target.classList.contains('t-hr2') || e.target.classList.contains('t-ampm2')) {
+                
+                let td = e.target.closest('td');
+                let hr1 = td.querySelector('.t-hr').value;
+                let ampm1 = td.querySelector('.t-ampm').value;
+                let hr2 = td.querySelector('.t-hr2').value;
+                let ampm2 = td.querySelector('.t-ampm2').value;
+
+                if (hr1 !== 'Select' && hr2 !== 'Select' && hr1.includes(':') && hr2.includes(':')) {
+                    let parseTime = (timeStr, ampm) => {
+                        let [h, m] = timeStr.split(':').map(Number);
+                        if (ampm === 'PM' && h !== 12) h += 12;
+                        if (ampm === 'AM' && h === 12) h = 0;
+                        return h + (m / 60);
+                    };
+
+                    let t1 = parseTime(hr1, ampm1);
+                    let t2 = parseTime(hr2, ampm2);
+                    let diff = t2 - t1;
+
+                    if (diff < 0) diff += 24; 
+
+                    if (diff > 10) {
+                        targetSelectInput = e.target; 
+                        document.getElementById('timeWarningText').innerHTML = `You are trying to set a shift that is <b>${diff.toFixed(1)} hours</b> long. This exceeds the 10-hour limit.<br><br>Do you want to update this shift?`;
+                        document.getElementById('timeWarningModal').style.display = 'flex';
+                    }
+                }
+            }
+        });
+
+        function closeTimeWarning(isYes) {
+            document.getElementById('timeWarningModal').style.display = 'none';
+            if (!isYes && targetSelectInput) {
+                targetSelectInput.value = 'Select'; 
+            }
+            targetSelectInput = null;
+        }
+
+        function saveRoster() {
+            if (currentRole === 'staff') return; 
+
+            const btn = document.getElementById('saveBtn');
+            const loc = document.getElementById('locationSelect').value;
+            const date = document.getElementById('rosterStartDate').value;
+            
+            btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Saving to Cloud...';
+            btn.disabled = true;
+
+            let data = [];
+            document.querySelectorAll('#rosterGrid tr').forEach(row => {
+                let rowData = [];
+                row.querySelectorAll('td').forEach((td, idx) => { 
+                    if(idx > 0) {
+                        rowData.push({ 
+                            hr1: td.querySelector('.t-hr').value, ampm1: td.querySelector('.t-ampm').value,
+                            hr2: td.querySelector('.t-hr2').value, ampm2: td.querySelector('.t-ampm2').value,
+                            staff: td.querySelector('.staff-select').value,
+                            task: td.querySelector('.task-select').value 
+                        });
+                    }
+                });
+                data.push(rowData);
+            });
+
+            const uniqueKey = "Roster_" + loc.replace(/[.#$\[\] ]/g, '_') + "_" + date;
+
+            database.ref('rosters/' + uniqueKey).set(data)
+            .then(() => {
+                alert("Roster successfully saved to Cloud Database! ☁️✅");
+            })
+            .catch((error) => {
+                alert("Save Failed! Please check Firebase rules or internet connection.");
+                console.error(error);
+            })
+            .finally(() => {
+                btn.innerHTML = '<i class="fas fa-save"></i> Save Roster';
+                btn.disabled = false;
+            });
+        }
+
+        function exportToExcel() {
+            if (currentRole === 'staff') return;
+
+            const loc = document.getElementById('locationSelect').value;
+            const headers = Array.from(document.querySelectorAll('#rosterHeader th')).map(th => th.innerText);
+            let csv = `Location: ${loc}\n${headers.join(',')}\n`;
+            document.querySelectorAll('#rosterGrid tr').forEach(row => {
+                const cells = row.querySelectorAll('td');
+                let r = [`"${cells[0].innerText.replace(/\n/g,' ')}"`];
+                for(let i=1; i<cells.length; i++) {
+                    let td = cells[i];
+                    let hr1 = td.querySelector('.t-hr').value, ampm1 = td.querySelector('.t-ampm').value;
+                    let hr2 = td.querySelector('.t-hr2').value, ampm2 = td.querySelector('.t-ampm2').value;
+                    let s = td.querySelector('.staff-select').value, tsk = td.querySelector('.task-select').value;
+                    
+                    if(s !== "None") {
+                        let t = "";
+                        if (hr1 !== "Select" && hr2 !== "Select") t = `${hr1} ${ampm1} - ${hr2} ${ampm2}`;
+                        else if (hr1 !== "Select") t = `${hr1} ${ampm1}`;
+                        
+                        let parts = [s];
+                        if (tsk !== "Select Task") parts.push(tsk);
+                        if (t !== "") parts.push(`(${t})`);
+                        r.push(`"${parts.join(' ')}"`);
+                    } else r.push(`"-"`);
+                }
+                csv += r.join(',') + "\n";
+            });
+            const blob = new Blob([csv], { type: 'text/csv' });
+            const a = document.createElement('a'); a.href = URL.createObjectURL(blob); a.download = `Roster.csv`; a.click();
+        }
+
+        // 🌟 EXACT EMAIL LAYOUT MATCHING YOUR IMAGE 🌟
+        async function executeSendEmail() {
+            let checkedBoxes = document.querySelectorAll('.email-checkbox:checked');
+            let selectedEmails = Array.from(checkedBoxes).map(cb => cb.value);
+
+            if(selectedEmails.length === 0) {
+                alert("Please select at least one email address!");
+                return;
+            }
+
+            const btn = document.getElementById('finalSendBtn');
+            const loc = document.getElementById('locationSelect').value;
+            const headers = Array.from(document.querySelectorAll('#rosterHeader th')).map(th => th.innerText);
+            
+            btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Preparing Format...'; 
+            btn.disabled = true;
+
+            let tableHtml = `
+            <div style="overflow-x: auto; max-width: 100%; margin: 0 auto; font-family: Arial, sans-serif;">
+                <h3 style="color:#333; margin-bottom:10px;">New Roster for ${loc}</h3>
+                <table style="width:100%; min-width: 650px; border-collapse:collapse; font-size:14px; border:1px solid #ddd;">
+                    <tr style="background:#00a2ed; color:#ffffff;">
+                        ${headers.map(h => `<th style="padding:12px 10px; border:1px solid #008ecc; white-space: nowrap;">${h}</th>`).join('')}
+                    </tr>`;
+
+            document.querySelectorAll('#rosterGrid tr').forEach(row => {
+                const cells = row.querySelectorAll('td');
+                if(cells.length < 2) return; 
+
+                // Process Date / Day Column
+                let bElement = cells[0].querySelector('b');
+                let spanElement = cells[0].querySelector('span');
+                
+                let dayDateText = bElement ? bElement.innerText : '';
+                let weekdayText = spanElement ? spanElement.innerText : '';
+                let holidayTag = cells[0].querySelector('.holiday-alert-tag');
+                
+                let dateEmailHtml = `<span style="color:#333;">${dayDateText}</span><br><span style="color:#555;">${weekdayText}</span>`;
+                
+                if(holidayTag) {
+                    let holidayName = holidayTag.innerText.replace('★', '').trim();
+                    // EXACT IMAGE MATCH: Name of Holiday at bottom, uppercase. No 'Public Holiday' string.
+                    dateEmailHtml += `<br><span style="text-transform:uppercase; font-size:13px; color:#333;">${holidayName}</span>`;
+                }
+
+                let rData = `<tr><td style="padding:15px 10px; border:1px solid #ddd; background:#f0f7fb; vertical-align:top; white-space:nowrap; text-align:left; line-height:1.5;">${dateEmailHtml}</td>`;
+                let hasEntry = false;
+
+                for(let i=1; i<cells.length; i++) {
+                    let td = cells[i];
+                    let hr1 = td.querySelector('.t-hr').value, ampm1 = td.querySelector('.t-ampm').value;
+                    let hr2 = td.querySelector('.t-hr2').value, ampm2 = td.querySelector('.t-ampm2').value;
+                    let s = td.querySelector('.staff-select').value, tsk = td.querySelector('.task-select').value;
+                    
+                    if(s !== "None") {
+                        let timeParts = [];
+                        if (hr1 && hr1 !== "Select") timeParts.push(`${hr1} ${ampm1}`);
+                        if (hr2 && hr2 !== "Select") timeParts.push(`${hr2} ${ampm2}`);
+                        let t = timeParts.join(' - ');
+
+                        // EXACT IMAGE MATCH: Name -> Task -> Time
+                        let cellHtml = `<strong style="font-size:15px; color:#000;">${s}</strong>`;
+                        
+                        if(tsk && tsk !== "Select Task") {
+                            cellHtml += `<br><span style="font-size:13px; color:#555;">${tsk}</span>`;
+                        }
+                        if(t !== "") {
+                            cellHtml += `<br><strong style="color:#00a2ed; font-size:13px;">${t}</strong>`;
+                        }
+                        
+                        rData += `<td style="padding:15px 10px; border:1px solid #ddd; text-align:center; vertical-align:middle; background:#fff; line-height:1.6;">${cellHtml}</td>`;
+                        hasEntry = true;
+                    } else {
+                        rData += `<td style="padding:15px 10px; border:1px solid #ddd; text-align:center; vertical-align:middle; color:#ccc; background:#fff;">-</td>`;
+                    }
+                }
+                if(hasEntry) tableHtml += rData + `</tr>`;
+            });
+            tableHtml += `</table></div>`;
+
+            try {
+                for (let i = 0; i < selectedEmails.length; i++) {
+                    btn.innerHTML = `<i class="fas fa-spinner fa-spin"></i> Sending (${i + 1}/${selectedEmails.length})...`;
+                    await emailjs.send(SERVICE_ID, TEMPLATE_ID, { 
+                        to_email: selectedEmails[i], 
+                        message: "New Roster for " + loc, 
+                        roster_table: tableHtml 
+                    });
+                    
+                    if (i < selectedEmails.length - 1) {
+                        await new Promise(resolve => setTimeout(resolve, 4000));
+                    }
+                }
+                alert('SUCCESS! Mails sent to selected addresses 🚀'); 
+                closeEmailModal();
+            } catch (err) {
+                alert('Error: ' + (err.text || 'Email failed.')); 
+            } finally {
+                btn.innerHTML = '<i class="fas fa-paper-plane"></i> Send Mail to Selected'; 
+                btn.disabled = false; 
+            }
+        }
+
+        window.onload = function() {
+            buildGrid();
+            updateLiveClocks();
+        };
+    </script>
+</body>
+</html>
