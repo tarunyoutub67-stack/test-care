@@ -228,7 +228,6 @@
         const TEMPLATE_ID = "template_gb0v9d9"; 
         
         const TEST_EMAILS = [
-            
             "starunsharma67@gmail.com",
         ];
         
@@ -463,6 +462,7 @@
             const a = document.createElement('a'); a.href = URL.createObjectURL(blob); a.download = `Roster.csv`; a.click();
         }
 
+        // 🌟 UPDATED EMAIL FUNCTION FOR PERFECT LAYOUT MATCHING THE IMAGE 🌟
         async function sendRosterEmail() {
             if (currentRole === 'staff') return;
 
@@ -476,25 +476,31 @@
             let tableHtml = `
             <div style="overflow-x: auto; max-width: 100%; margin: 0 auto;">
                 <table style="width:100%; min-width: 650px; border-collapse:collapse; font-size:13px; font-family: Arial, sans-serif; border:1px solid #ddd;">
-                    <tr style="background:#00a2ed; color:white;">
-                        ${headers.map(h => `<th style="padding:10px; border:1px solid #008ecc; white-space: nowrap;">${h}</th>`).join('')}
+                    <tr style="background:#90c2e7; color:#000;">
+                        ${headers.map(h => `<th style="padding:10px; border:1px solid #ccc; white-space: nowrap;">${h}</th>`).join('')}
                     </tr>`;
 
             document.querySelectorAll('#rosterGrid tr').forEach(row => {
                 const cells = row.querySelectorAll('td');
+                if(cells.length < 2) return; 
+
+                // Process Date / Day Column
+                let bElement = cells[0].querySelector('b');
+                let spanElement = cells[0].querySelector('span');
                 
-                // 🌟 Custom Date Cell parsing for exact email output 🌟
-                let dayDateText = cells[0].querySelector('b').innerText;
-                let weekdayText = cells[0].querySelector('span').innerText;
+                let dayDateText = bElement ? bElement.innerText : '';
+                let weekdayText = spanElement ? spanElement.innerText : '';
                 let holidayTag = cells[0].querySelector('.holiday-alert-tag');
                 
-                let dateEmailHtml = `${dayDateText}<br>${weekdayText}`;
+                let dateEmailHtml = `<span style="font-size:13px; color:#333;">${dayDateText}</span><br><span style="font-size:13px; color:#333;">${weekdayText}</span>`;
+                
                 if(holidayTag) {
-                    let holidayName = holidayTag.innerText.replace('★ ', '').trim();
-                    dateEmailHtml += `<br><span style="text-transform:uppercase;">${holidayName}</span><br><b style="color:#008ecc;">Public Holiday</b>`;
+                    let holidayName = holidayTag.innerText.replace('★', '').trim();
+                    dateEmailHtml += `<br><br><span style="text-transform:uppercase; font-size:12px; color:#333;">${holidayName}</span><br><b style="color:#0066cc; font-size:13px;">Public Holiday</b>`;
                 }
 
-                let rData = `<tr><td style="padding:10px; border:1px solid #ddd; background:#f9f9f9; vertical-align:middle; white-space:nowrap;">${dateEmailHtml}</td>`;
+                // Table Row Design for Email
+                let rData = `<tr><td style="padding:10px; border:1px solid #ccc; background:#dce9f4; vertical-align:middle; white-space:nowrap; text-align:left;">${dateEmailHtml}</td>`;
                 let hasEntry = false;
 
                 for(let i=1; i<cells.length; i++) {
@@ -509,18 +515,18 @@
                         if (hr2 && hr2 !== "Select") timeParts.push(`${hr2} ${ampm2}`);
                         let t = timeParts.join(' - ');
 
-                        // 🌟 Order Swapped: Time first, Task second for Email 🌟
-                        let timeHtml = (t === "") ? "" : `<div style="color:#00a2ed; font-weight:bold; font-size:12px; margin-top:4px;">${t}</div>`;
-                        let taskHtml = (!tsk || tsk === "Select Task") ? "" : `<div style="font-size:12px; margin-top:4px; color:#475569;">${tsk}</div>`;
+                        // 🌟 Ordered correctly: Name -> Time -> Task 🌟
+                        let timeHtml = (t === "") ? "" : `<br><span style="color:#0066cc; font-size:12px;">${t}</span>`;
+                        let taskHtml = (!tsk || tsk === "Select Task") ? "" : `<br><span style="font-size:12px; color:#333;">${tsk}</span>`;
                         
-                        rData += `<td style="padding:10px; border:1px solid #ddd; text-align:center; vertical-align:middle;">
-                                    <strong style="font-size:14px; color:#1e293b;">${s}</strong>
+                        rData += `<td style="padding:10px; border:1px solid #ccc; text-align:center; vertical-align:middle; background:#fff;">
+                                    <strong style="font-size:14px; color:#000;">${s}</strong>
                                     ${timeHtml}
                                     ${taskHtml}
                                   </td>`;
                         hasEntry = true;
                     } else {
-                        rData += `<td style="padding:10px; border:1px solid #ddd; color:#cbd5e1; text-align:center; vertical-align:middle;">-</td>`;
+                        rData += `<td style="padding:10px; border:1px solid #ccc; color:#999; text-align:center; vertical-align:middle; background:#fff;">-</td>`;
                     }
                 }
                 if(hasEntry) tableHtml += rData + `</tr>`;
