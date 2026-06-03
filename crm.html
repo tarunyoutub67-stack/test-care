@@ -20,7 +20,7 @@
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
     
     <style>
-        :root { --primary: #00a2ed; --primary-dark: #008ecc; --bg: #f8fafc; --border: #e2e8f0; --text-main: #1e293b; --text-light: #64748b; }
+        :root { --primary: #00a2ed; --primary-dark: #008ecc; --bg: #f8fafc; --border: #e2e8f0; --text-main: #1e293b; --text-light: #64748b; --holiday-red: #ef4444; }
         * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Plus Jakarta Sans', sans-serif; }
         body { display: flex; height: 100vh; overflow: hidden; background: var(--bg); }
 
@@ -58,6 +58,23 @@
         .excel-table th { background: var(--primary); color: white; padding: 14px 10px; border: 1px solid var(--primary-dark); font-size: 11px; position: sticky; top: 0; z-index: 10; min-width: 170px; }
         .excel-table td { border: 1px solid #e2e8f0; vertical-align: top; padding: 12px 10px; }
         
+        /* 🌟🌟🌟 ROSTER ROW HIGHLIGHT & HOLIDAY BADGE DESIGN 🌟🌟🌟 */
+        .roster-holiday-row { background-color: #fff1f2 !important; }
+        .roster-holiday-row td { border-top: 2px solid #fecdd3 !important; border-bottom: 2px solid #fecdd3 !important; }
+        .holiday-alert-tag { 
+            background: var(--holiday-red); 
+            color: white; 
+            font-size: 10px; 
+            font-weight: 800; 
+            padding: 6px 8px; 
+            border-radius: 6px; 
+            display: block; 
+            margin-top: 8px; 
+            text-transform: uppercase; 
+            letter-spacing: 0.5px; 
+            box-shadow: 0 2px 4px rgba(239, 68, 68, 0.3); 
+        }
+
         .t-label { font-size: 9px; color: #94a3b8; font-weight: 800; margin-bottom: 3px; text-transform: uppercase; letter-spacing: 0.5px; }
         .time-flex { display: flex; gap: 6px; margin-bottom: 8px; }
         .t-hr, .t-hr2 { flex: 2; padding: 6px 4px; border: 1px solid #cbd5e1; border-radius: 5px; font-size: 11px; font-weight: 600; outline: none; background: #fff; }
@@ -103,6 +120,7 @@
         </div>
     </div>
 
+    <!-- SIDEBAR -->
     <div class="sidebar">
         <div class="logo-area"><h2><i class="fas fa-heartbeat"></i> CureAndCare</h2></div>
         <div class="nav-menu">
@@ -118,7 +136,7 @@
                     <i class="fas fa-wallet"></i> FUNDING <i class="fas fa-chevron-down caret"></i>
                 </a>
                 <div class="dropdown-container" id="fundingDropdown" style="background:#fff; margin:0; padding:10px 15px; border-left:none;">
-                    <a href="crm-ndis.html" class="nav-item"><i class="fas fa-file-contract"></i> Open NDIS Workspace</a>
+                    <a href="crm-home.html" onclick="localStorage.setItem('targetTab', 'ndisSection')" class="nav-item"><i class="fas fa-file-contract"></i> Create NDIS & Services</a>
                     <a href="crm-invoice.html" class="nav-item"><i class="fas fa-file-invoice-dollar"></i> Invoice & Claims</a>
                 </div>
             </div>
@@ -152,7 +170,7 @@
                         <option>27A Clearview Crescent Orange NSW 2800</option>
                         <option>7 Gilroy Place Orange NSW 2800</option>
                     </select>
-                    <input type="date" id="rosterStartDate" value="2026-05-11" onchange="buildGrid()" class="select-input">
+                    <input type="date" id="rosterStartDate" value="2026-04-01" onchange="buildGrid()" class="select-input">
                 </div>
                 
                 <div id="actionButtons" style="display:flex; gap:10px;">
@@ -175,13 +193,11 @@
     </div>
 
     <script>
-        // 🚀 DROPDOWN FUNCTION ADDED
         function toggleDropdown(id, el) {
             document.getElementById(id).classList.toggle('open');
             el.classList.toggle('open');
         }
 
-        // 🚀 UI & ROLE CHECK
         let currentRole = 'staff'; 
         if(activeUser) {
             document.getElementById('displayStaffName').innerText = activeUser.name || activeUser.username;
@@ -214,16 +230,40 @@
         const TEMPLATE_ID = "template_gb0v9d9"; 
         
         const TEST_EMAILS = [
+            "ayushsydney@gmail.com", 
             "Puja851021@gmail.com", 
             "starunsharma67@gmail.com",  
             "accounts@cureandcare.com.au", 
-            "admin@cureandcare.com.au", 
-            "ayushsydney@gmail.com", 
+            "admin@cureandcare.com.au",
         ];
         
         const STAFF_LIST = ["None", "Ankit", "Bubble", "Rene", "Titus", "Marcelo", "Nitesh"];
-        const TASK_LIST = ["Select Task", "1:1 Support", "Community Participation", "Sleepover", "Awake Night"];
-        const HR_OPTIONS = ["Select", "12:00", "01:00", "02:00", "03:00", "04:00", "05:00", "06:00", "07:00", "08:00", "09:00", "10:00", "11:00", "Sleepover", "Leave", "Sick", "Training"];
+        const TASK_LIST = ["Select Task", "1:1 Support", "Community Participation", "Morning Shift", "Sleepover", "Awake Night"];
+        
+        // 🌟 UPDATED WITH 30-MINUTE INTERVALS 🌟
+        const HR_OPTIONS = [
+            "Select", "12:00", "12:30", "01:00", "01:30", "02:00", "02:30", 
+            "03:00", "03:30", "04:00", "04:30", "05:00", "05:30", "06:00", 
+            "06:30", "07:00", "07:30", "08:00", "08:30", "09:00", "09:30", 
+            "10:00", "10:30", "11:00", "11:30", "Sleepover", "Leave", "Sick", "Training"
+        ];
+
+        // NSW Holidays Data
+        const nswPublicHolidays = {
+            "01-01": "New Year's Day",
+            "01-26": "Australia Day",
+            "04-03": "Good Friday",
+            "04-04": "Easter Saturday",
+            "04-05": "Easter Sunday",
+            "04-06": "Easter Monday",
+            "04-25": "Anzac Day",
+            "04-27": "Additional Anzac Day",
+            "06-08": "King's Birthday",
+            "10-05": "Labour Day",
+            "12-25": "Christmas Day",
+            "12-26": "Boxing Day",
+            "12-28": "Additional Boxing Day"
+        };
 
         function updateLiveClocks() {
             const now = new Date();
@@ -262,10 +302,26 @@
                 
                 for(let i=0; i<14; i++) {
                     let d = new Date(start); d.setDate(start.getDate() + i);
-                    let row = `<tr class="${disabledClass}">
-                        <td style="background:#f8fafc; text-align:center; vertical-align:middle;">
+                    
+                    let currentMonthStr = (d.getMonth() + 1).toString().padStart(2, '0');
+                    let currentDayStr = d.getDate().toString().padStart(2, '0');
+                    let dayLookupKey = `${currentMonthStr}-${currentDayStr}`;
+                    
+                    let rowClass = disabledClass;
+                    let holidayBadgeHtml = "";
+                    let tdBg = "#f8fafc";
+                    
+                    if(nswPublicHolidays[dayLookupKey]) {
+                        rowClass += " roster-holiday-row";
+                        holidayBadgeHtml = `<div class="holiday-alert-tag"><i class="fas fa-star"></i> ${nswPublicHolidays[dayLookupKey]}</div>`;
+                        tdBg = "transparent";
+                    }
+
+                    let row = `<tr class="${rowClass}">
+                        <td style="background:${tdBg}; text-align:center; vertical-align:middle;">
                             <b style="font-size:14px; color:#1e293b;">${d.getDate()}-${d.toLocaleString('default',{month:'short'})}</b><br>
                             <span style="color:#64748b; font-weight:600;">${d.toLocaleDateString('en-US',{weekday:'long'})}</span>
+                            ${holidayBadgeHtml}
                         </td>
                         ${columns.map((val, cellIndex) => {
                             let s = savedData && savedData[i] && savedData[i][cellIndex] ? savedData[i][cellIndex] : {};
