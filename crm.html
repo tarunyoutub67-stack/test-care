@@ -6,7 +6,9 @@
         (function() { emailjs.init("wLfY3tCPBLZBuNMkx"); })();
     </script>
 
+    <!-- 🚀 ADDED FIREBASE AUTH -->
     <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-auth.js"></script>
     <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-database.js"></script>
 
     <script>
@@ -58,23 +60,18 @@
         .excel-table th { background: var(--primary); color: white; padding: 14px 10px; border: 1px solid var(--primary-dark); font-size: 11px; position: sticky; top: 0; z-index: 10; min-width: 170px; }
         .excel-table td { border: 1px solid #e2e8f0; vertical-align: top; padding: 12px 10px; }
         
+        /* 🚀 NEW ROW HIGHLIGHTING CSS */
         .roster-holiday-row { background-color: #fff1f2 !important; }
         .roster-holiday-row td { border-top: 2px solid #fecdd3 !important; border-bottom: 2px solid #fecdd3 !important; }
-        .holiday-alert-tag { 
-            background: var(--holiday-red); 
-            color: white; 
-            font-size: 10px; 
-            font-weight: 800; 
-            padding: 6px 8px; 
-            border-radius: 6px; 
-            display: block; 
-            margin-top: 8px; 
-            text-transform: uppercase; 
-            letter-spacing: 0.5px; 
-            box-shadow: 0 2px 4px rgba(239, 68, 68, 0.3); 
-        }
+        
+        .roster-weekend-row { background-color: #f0f9ff !important; }
+        
+        .roster-today-row td { border-top: 2px solid #eab308 !important; border-bottom: 2px solid #eab308 !important; background-color: #fefce8 !important; }
+        .today-tag { background: #eab308; color: #fff; font-size: 9px; padding: 2px 6px; border-radius: 4px; text-transform: uppercase; font-weight: 800; margin-left: 5px; }
 
-        .t-label { font-size: 9px; color: #94a3b8; font-weight: 800; margin-bottom: 3px; text-transform: uppercase; letter-spacing: 0.5px; }
+        .holiday-alert-tag { background: var(--holiday-red); color: white; font-size: 10px; font-weight: 800; padding: 6px 8px; border-radius: 6px; display: block; margin-top: 8px; text-transform: uppercase; letter-spacing: 0.5px; box-shadow: 0 2px 4px rgba(239, 68, 68, 0.3); }
+
+        .t-label { font-size: 9px; color: #94a3b8; font-weight: 800; margin-bottom: 3px; text-transform: uppercase; letter-spacing: 0.5px; display: flex; justify-content: space-between; align-items: center; }
         .time-flex { display: flex; gap: 6px; margin-bottom: 8px; }
         .t-hr, .t-hr2 { flex: 2; padding: 6px 4px; border: 1px solid #cbd5e1; border-radius: 5px; font-size: 11px; font-weight: 600; outline: none; background: #fff; }
         .t-ampm, .t-ampm2 { flex: 1; padding: 6px 2px; border: 1px solid #cbd5e1; border-radius: 5px; font-size: 11px; font-weight: 700; background: #f8fafc; text-align: center; }
@@ -85,12 +82,16 @@
         .staff-select { background: #f0f9ff; color: #008ecc; border-color: #00a2ed; }
         .task-select { background: #fff; color: #475569; }
 
-        .btn { padding: 9px 18px; border-radius: 6px; font-weight: 700; cursor: pointer; border: none; font-size: 13px; display: flex; align-items: center; gap: 8px; }
+        .btn { padding: 9px 18px; border-radius: 6px; font-weight: 700; cursor: pointer; border: none; font-size: 13px; display: flex; align-items: center; gap: 8px; transition: 0.2s; }
+        .btn:hover { opacity: 0.9; transform: translateY(-1px); }
         .btn-save { background: #6366f1; color: white; }
         .btn-excel { background: #3b82f6; color: white; }
         .btn-publish { background: #10b981; color: white; }
+        .btn-print { background: #475569; color: white; }
+        .btn-clear { background: #ef4444; color: white; font-size: 10px; padding: 4px 8px; margin-top: 10px; border-radius: 4px; width: 100%; justify-content: center; }
 
         .staff-view-only select { pointer-events: none; background-color: #f8fafc !important; color: #64748b !important; border-color: #e2e8f0 !important; -moz-appearance: none; -webkit-appearance: none; appearance: none; }
+        .staff-view-only .btn-clear { display: none !important; }
 
         .crm-footer { background: #fff; padding: 12px 20px; text-align: center; font-size: 12px; font-weight: 600; color: var(--text-light); border-top: 1px solid var(--border); flex-shrink: 0; }
         .crm-footer span { color: var(--primary); }
@@ -103,11 +104,31 @@
         .btn-yes:hover { background: #059669; }
         .btn-no { background: #ef4444; color: white; }
         .btn-no:hover { background: #dc2626; }
+
+        /* 🌟 TOAST NOTIFICATION CSS 🌟 */
+        #toastBox { visibility: hidden; min-width: 250px; background-color: #1e293b; color: #fff; text-align: center; border-radius: 10px; padding: 16px 24px; position: fixed; z-index: 10000; left: 50%; bottom: 30px; transform: translateX(-50%); font-size: 14px; font-weight: 600; box-shadow: 0 10px 25px rgba(0,0,0,0.2); display: flex; align-items: center; gap: 10px; }
+        #toastBox.show { visibility: visible; animation: fadein 0.5s, fadeout 0.5s 3.5s; }
+        #toastBox.success { border-left: 5px solid #10b981; }
+        #toastBox.error { border-left: 5px solid #ef4444; }
+        @keyframes fadein { from { bottom: 0; opacity: 0; } to { bottom: 30px; opacity: 1; } }
+        @keyframes fadeout { from { bottom: 30px; opacity: 1; } to { bottom: 0; opacity: 0; } }
+
+        /* 🖨️ PRINT CSS */
+        @media print {
+            .sidebar, .top-header, .toolbar, .live-clocks, #toastBox, .btn-clear { display: none !important; }
+            .main-content { overflow: visible !important; }
+            .roster-view { padding: 0 !important; overflow: visible !important; }
+            .excel-table th { color: #000; background: #e2e8f0 !important; border: 1px solid #000; -webkit-print-color-adjust: exact; }
+            .excel-table td, .excel-table th { border: 1px solid #000 !important; }
+            select { appearance: none; -moz-appearance: none; -webkit-appearance: none; border: none !important; background: transparent !important; }
+            @page { size: landscape; margin: 10mm; }
+        }
     </style>
 </head>
 <body>
 
-    <!-- TIME WARNING MODAL -->
+    <div id="toastBox"><i id="toastIcon" class="fas fa-check-circle"></i> <span id="toastMsg">Success!</span></div>
+
     <div class="modal-overlay" id="timeWarningModal">
         <div class="modal-box">
             <i class="fas fa-exclamation-circle" style="font-size: 55px; color: #ef4444; margin-bottom: 15px;"></i>
@@ -120,7 +141,6 @@
         </div>
     </div>
 
-    <!-- 🌟 EMAIL SELECTOR MODAL 🌟 -->
     <div class="modal-overlay" id="emailModal">
         <div class="modal-box" style="max-width: 450px; text-align: left; padding: 25px;">
             <h3 style="margin-bottom: 15px; display:flex; justify-content:space-between; align-items:center; color:#0f172a;">
@@ -133,8 +153,12 @@
                 <button onclick="addCustomEmail()" class="btn btn-save" style="padding: 9px 15px; border-radius:8px;"><i class="fas fa-plus"></i> Add</button>
             </div>
 
+            <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom: 10px; padding: 0 5px;">
+                <span style="font-size:12px; font-weight:700; color:#64748b;">MAILING LIST</span>
+                <span style="font-size:12px; font-weight:700; color:#00a2ed; cursor:pointer;" onclick="toggleAllEmails()" id="toggleEmailBtn">Deselect All</span>
+            </div>
+
             <div id="emailChecklist" style="max-height: 250px; overflow-y:auto; border:1px solid #cbd5e1; border-radius:8px; padding:15px; margin-bottom:20px; display:flex; flex-direction:column; gap:12px; background:#f8fafc;">
-                <!-- JS WILL RENDER CHECKBOXES HERE -->
             </div>
 
             <button id="finalSendBtn" class="btn btn-publish" style="width:100%; justify-content:center; padding:12px; font-size:15px;" onclick="executeSendEmail()">
@@ -143,7 +167,6 @@
         </div>
     </div>
 
-    <!-- SIDEBAR -->
     <div class="sidebar">
         <div class="logo-area"><h2><i class="fas fa-heartbeat"></i> CureAndCare</h2></div>
         <div class="nav-menu">
@@ -181,7 +204,7 @@
             <div class="user-profile">
                 <i class="fas fa-user-circle" style="font-size:18px; color:var(--primary);"></i> 
                 Hi, <span id="displayStaffName">Staff</span>
-                <button onclick="localStorage.clear(); sessionStorage.clear(); window.location.replace('crm-login.html');" style="background:#ef4444; color:#fff; border:none; padding:6px 12px; border-radius:6px; cursor:pointer; font-weight:700; font-size:11px; margin-left:10px;">Logout</button>
+                <button onclick="logout()" style="background:#ef4444; color:#fff; border:none; padding:6px 12px; border-radius:6px; cursor:pointer; font-weight:700; font-size:11px; margin-left:10px;">Logout</button>
             </div>
         </header>
 
@@ -199,8 +222,8 @@
                 <div id="actionButtons" style="display:flex; gap:10px;">
                     <button class="btn btn-save" id="saveBtn" onclick="saveRoster()"><i class="fas fa-save"></i> Save Roster</button>
                     <button class="btn btn-excel" id="excelBtn" onclick="exportToExcel()"><i class="fas fa-file-excel"></i> Export Excel</button>
-                    <!-- 🌟 Publish Button Opens Modal Now 🌟 -->
                     <button class="btn btn-publish" id="publishBtn" onclick="openEmailModal()"><i class="fas fa-paper-plane"></i> Publish & Email</button>
+                    <button class="btn btn-print" onclick="window.print()"><i class="fas fa-print"></i> Print</button>
                 </div>
             </div>
 
@@ -217,9 +240,32 @@
     </div>
 
     <script>
+        // 🌟 TOAST NOTIFICATION FUNCTION 🌟
+        function showToast(message, isError = false) {
+            const toast = document.getElementById("toastBox");
+            const toastMsg = document.getElementById("toastMsg");
+            const toastIcon = document.getElementById("toastIcon");
+
+            toastMsg.innerText = message;
+            toast.className = "show " + (isError ? "error" : "success");
+            toastIcon.className = isError ? "fas fa-times-circle" : "fas fa-check-circle";
+            toastIcon.style.color = isError ? "#ef4444" : "#10b981";
+
+            setTimeout(() => { toast.className = toast.className.replace("show", ""); }, 3800);
+        }
+
         function toggleDropdown(id, el) {
             document.getElementById(id).classList.toggle('open');
             el.classList.toggle('open');
+        }
+
+        // 🚀 SECURE LOGOUT FUNCTION
+        function logout() { 
+            firebase.auth().signOut().then(() => {
+                localStorage.clear(); 
+                sessionStorage.clear(); 
+                window.location.replace('crm-login.html'); 
+            });
         }
 
         let currentRole = 'staff'; 
@@ -227,14 +273,22 @@
             document.getElementById('displayStaffName').innerText = activeUser.name || activeUser.username;
             currentRole = String(activeUser.role || '').toLowerCase().trim();
             
+            // 🛑 STAFF RESTRICTIONS
             if (currentRole === 'staff') {
                 if(document.getElementById('fundingBlock')) document.getElementById('fundingBlock').style.display = 'none';
-                if(document.getElementById('navHr')) document.getElementById('navHr').style.display = 'none';
                 if(document.getElementById('actionButtons')) document.getElementById('actionButtons').style.display = 'none'; 
                 
                 if(document.getElementById('saveBtn')) document.getElementById('saveBtn').style.display = 'none';
                 if(document.getElementById('excelBtn')) document.getElementById('excelBtn').style.display = 'none';
                 if(document.getElementById('publishBtn')) document.getElementById('publishBtn').style.display = 'none';
+            }
+
+            // 🚀 NEW STRICT RULE: ONLY ADMIN CAN SEE HR MENU
+            if (currentRole !== 'admin') {
+                if(document.getElementById('navHr')) document.getElementById('navHr').style.display = 'none';
+                if (localStorage.getItem('targetTab') === 'hrSection') {
+                    localStorage.setItem('targetTab', 'dashboardSection');
+                }
             }
         }
 
@@ -247,23 +301,16 @@
             messagingSenderId: "294207622967",
             appId: "1:294207622967:web:59846c2cf1b463cb21d4b2"
         };
-        firebase.initializeApp(firebaseConfig);
+        if (!firebase.apps.length) firebase.initializeApp(firebaseConfig);
         const database = firebase.database();
 
         const SERVICE_ID = "service_adqy43h";
         const TEMPLATE_ID = "template_gb0v9d9"; 
         
-        // 🌟 DEFAULT EMAIL LIST 🌟
         let defaultEmailList = [
-            "niteshkalia54@gmail.com",
-            "nayswart@gmail.com",
-            "marceloasaramos31@gmail.com",
-            "kaptingeit@yahoo.com",
-            "498876729@qq.com",
-            "accounts@cureandcare.com.au",
-            "admin@cureandcare.com.au",
-            "starunsharma67@gmail.com",
-            "ayushsydney@gmail.com"
+            "niteshkalia54@gmail.com", "nayswart@gmail.com", "marceloasaramos31@gmail.com",
+            "kaptingeit@yahoo.com", "498876729@qq.com", "accounts@cureandcare.com.au",
+            "admin@cureandcare.com.au", "starunsharma67@gmail.com", "ayushsydney@gmail.com"
         ];
         
         const STAFF_LIST = ["None", "Ankit", "Bubble", "Rene", "Titus", "Marcelo", "Nitesh"];
@@ -276,30 +323,28 @@
         ];
 
         const nswPublicHolidays = {
-            "01-01": "New Year's Day",
-            "01-26": "Australia Day",
-            "04-03": "Good Friday",
-            "04-04": "Easter Saturday",
-            "04-05": "Easter Sunday",
-            "04-06": "Easter Monday",
-            "04-25": "Anzac Day",
-            "04-27": "Additional Anzac Day",
-            "06-08": "King's Birthday",
-            "10-05": "Labour Day",
-            "12-25": "Christmas Day",
-            "12-26": "Boxing Day",
-            "12-28": "Additional Boxing Day"
+            "01-01": "New Year's Day", "01-26": "Australia Day", "04-03": "Good Friday",
+            "04-04": "Easter Saturday", "04-05": "Easter Sunday", "04-06": "Easter Monday",
+            "04-25": "Anzac Day", "04-27": "Additional Anzac Day", "06-08": "King's Birthday",
+            "10-05": "Labour Day", "12-25": "Christmas Day", "12-26": "Boxing Day", "12-28": "Additional Boxing Day"
         };
 
-        // 🌟 EMAIL MODAL FUNCTIONS 🌟
+        let allEmailsSelected = true;
+
         function openEmailModal() {
             if (currentRole === 'staff') return;
             document.getElementById('emailModal').style.display = 'flex';
             renderEmailChecklist();
         }
 
-        function closeEmailModal() {
-            document.getElementById('emailModal').style.display = 'none';
+        function closeEmailModal() { document.getElementById('emailModal').style.display = 'none'; }
+
+        function toggleAllEmails() {
+            let checkboxes = document.querySelectorAll('.email-checkbox');
+            let toggleBtn = document.getElementById('toggleEmailBtn');
+            allEmailsSelected = !allEmailsSelected;
+            checkboxes.forEach(cb => { cb.checked = allEmailsSelected; });
+            toggleBtn.innerText = allEmailsSelected ? "Deselect All" : "Select All";
         }
 
         function renderEmailChecklist() {
@@ -308,7 +353,7 @@
             defaultEmailList.forEach((email) => {
                 container.innerHTML += `
                     <label style="display:flex; align-items:center; gap:12px; cursor:pointer; font-size:14px; color:#1e293b; font-weight:600;">
-                        <input type="checkbox" value="${email}" class="email-checkbox" checked style="width:16px; height:16px; cursor:pointer;">
+                        <input type="checkbox" value="${email}" class="email-checkbox" ${allEmailsSelected ? 'checked' : ''} style="width:16px; height:16px; cursor:pointer;">
                         ${email}
                     </label>
                 `;
@@ -318,16 +363,14 @@
         function addCustomEmail() {
             let input = document.getElementById('customEmailInput');
             let newEmail = input.value.trim().toLowerCase();
-            
             if(newEmail && newEmail.includes('@') && newEmail.includes('.')) {
                 if(!defaultEmailList.includes(newEmail)) {
-                    defaultEmailList.unshift(newEmail); // Adds to the top of the list
+                    defaultEmailList.unshift(newEmail);
                     renderEmailChecklist();
-                }
+                    showToast("Email Added Successfully!");
+                } else { showToast("Email already exists in list", true); }
                 input.value = '';
-            } else {
-                alert('Please enter a valid email address!');
-            }
+            } else { showToast("Please enter a valid email!", true); }
         }
 
         function updateLiveClocks() {
@@ -338,6 +381,27 @@
         }
         setInterval(updateLiveClocks, 1000);
 
+        // 🌟 HELPER FUNCTION: CALCULATE SHIFT HOURS 🌟
+        function calcShiftHours(hr1, am1, hr2, am2) {
+            if(!hr1 || !hr2 || hr1==='Select' || hr2==='Select') return '';
+            if(hr1==='Sleepover' || hr2==='Sleepover') return 'Sleepover';
+            if(['Leave', 'Sick', 'Training'].includes(hr1)) return hr1;
+            
+            if (hr1.includes(':') && hr2.includes(':')) {
+                let parseTime = (timeStr, ampm) => {
+                    let [h, m] = timeStr.split(':').map(Number);
+                    if (ampm === 'PM' && h !== 12) h += 12;
+                    if (ampm === 'AM' && h === 12) h = 0;
+                    return h + (m / 60);
+                };
+                let t1 = parseTime(hr1, am1), t2 = parseTime(hr2, am2);
+                let diff = t2 - t1;
+                if (diff < 0) diff += 24; 
+                return `<i class="fas fa-clock"></i> ${diff.toFixed(1)} hrs`;
+            }
+            return '';
+        }
+
         function buildGrid() {
             const loc = document.getElementById('locationSelect').value;
             const start = new Date(document.getElementById('rosterStartDate').value);
@@ -345,24 +409,19 @@
             const header = document.getElementById('rosterHeader');
 
             let columns = [];
-            if(loc.includes("27A")) {
-                columns = ["Shift 1", "Shift 2", "Craig Calleja (Home Support)"];
-            } else {
-                columns = ["Shift 1", "Shift 2", "Shift 3", "Mitch (1:1)", "Steve's Home alone hours"];
-            }
+            if(loc.includes("27A")) { columns = ["Shift 1", "Shift 2", "Craig Calleja (Home Support)"]; } 
+            else { columns = ["Shift 1", "Shift 2", "Shift 3", "Mitch (1:1)", "Steve's Home alone hours"]; }
 
             header.innerHTML = `<tr><th width="120">Date / Day</th>${columns.map(c => `<th>${c}</th>`).join('')}</tr>`;
             grid.innerHTML = '<tr><td colspan="10" style="text-align:center; padding:40px; font-weight:bold; color:#00a2ed;"><i class="fas fa-spinner fa-spin"></i> Fetching Live Roster from Cloud...</td></tr>';
 
             const uniqueKey = "Roster_" + loc.replace(/[.#$\[\] ]/g, '_') + "_" + document.getElementById('rosterStartDate').value;
             const disabledClass = currentRole === 'staff' ? 'staff-view-only' : '';
+            const todayStr = new Date().toDateString();
 
             database.ref('rosters/' + uniqueKey).get().then((snapshot) => {
                 let savedData = [];
-                if (snapshot.exists()) {
-                    savedData = snapshot.val();
-                }
-                
+                if (snapshot.exists()) { savedData = snapshot.val(); }
                 grid.innerHTML = '';
                 
                 for(let i=0; i<14; i++) {
@@ -372,29 +431,35 @@
                     let currentDayStr = d.getDate().toString().padStart(2, '0');
                     let dayLookupKey = `${currentMonthStr}-${currentDayStr}`;
                     
+                    let isWeekend = (d.getDay() === 0 || d.getDay() === 6);
+                    let isToday = (d.toDateString() === todayStr);
+
                     let rowClass = disabledClass;
                     let holidayBadgeHtml = "";
-                    let tdBg = "#f8fafc";
+                    let todayBadgeHtml = isToday ? `<span class="today-tag">Today</span>` : "";
                     
                     if(nswPublicHolidays[dayLookupKey]) {
                         rowClass += " roster-holiday-row";
                         holidayBadgeHtml = `<div class="holiday-alert-tag"><i class="fas fa-star"></i> ${nswPublicHolidays[dayLookupKey]}</div>`;
-                        tdBg = "transparent";
+                    } else if (isWeekend) {
+                        rowClass += " roster-weekend-row";
                     }
+                    if(isToday) rowClass += " roster-today-row";
 
                     let row = `<tr class="${rowClass}">
-                        <td style="background:${tdBg}; text-align:center; vertical-align:middle;">
-                            <b style="font-size:14px; color:#1e293b;">${d.getDate()}-${d.toLocaleString('default',{month:'short'})}</b><br>
+                        <td style="text-align:center; vertical-align:middle; position:relative;">
+                            <b style="font-size:14px; color:#1e293b;">${d.getDate()}-${d.toLocaleString('default',{month:'short'})}</b> ${todayBadgeHtml}<br>
                             <span style="color:#64748b; font-weight:600;">${d.toLocaleDateString('en-US',{weekday:'long'})}</span>
                             ${holidayBadgeHtml}
+                            <button class="btn-clear" onclick="clearRow(this)"><i class="fas fa-eraser"></i> Clear Day</button>
                         </td>
                         ${columns.map((val, cellIndex) => {
                             let s = savedData && savedData[i] && savedData[i][cellIndex] ? savedData[i][cellIndex] : {};
-                            
                             let currentTasks = [...TASK_LIST];
-                            if (val === "Shift 3" || val === "Mitch (1:1)") {
-                                currentTasks.push("Specialist Appointment");
-                            }
+                            if (val === "Shift 3" || val === "Mitch (1:1)") { currentTasks.push("Specialist Appointment"); }
+
+                            // 🌟 Calculate Hours dynamically for display
+                            let hoursDisplay = calcShiftHours(s.hr1, s.ampm1, s.hr2, s.ampm2);
 
                             return `<td>
                                 <div class="t-label">Start Time</div>
@@ -404,7 +469,7 @@
                                 <div class="time-flex"><select class="t-hr2">${HR_OPTIONS.map(h => `<option ${h === (s.hr2 || 'Select') ? 'selected' : ''}>${h}</option>`).join('')}</select>
                                 <select class="t-ampm2"><option ${s.ampm2 === 'AM' ? 'selected' : ''}>AM</option><option ${s.ampm2 === 'PM' ? 'selected' : ''}>PM</option></select></div>
                                 <div class="divider"></div>
-                                <div class="t-label">Assign Staff</div>
+                                <div class="t-label"><span>Assign Staff</span> <span class="shift-hours-badge" style="color:#00a2ed; font-size:10px;">${hoursDisplay}</span></div>
                                 <select class="staff-select">${STAFF_LIST.map(n => `<option ${n === (s.staff || 'None') ? 'selected' : ''}>${n}</option>`).join('')}</select>
                                 <div class="t-label">Assign Task</div>
                                 <select class="task-select">${currentTasks.map(t => `<option ${t === (s.task || 'Select Task') ? 'selected' : ''}>${t}</option>`).join('')}</select>
@@ -414,23 +479,37 @@
                     grid.innerHTML += row;
                 }
             }).catch((error) => {
-                grid.innerHTML = `<tr><td colspan="10" style="text-align:center; padding: 40px; color: red;"><b>Database Error:</b> Ensure Firebase Realtime Database 'Rules' are set to test mode (true).</td></tr>`;
+                grid.innerHTML = `<tr><td colspan="10" style="text-align:center; padding: 40px; color: red;"><b>Database Error:</b> Could not fetch data. Check rules or Auth.</td></tr>`;
                 console.error(error);
             });
         }
+
+        // 🌟 CLEAR ROW FUNCTION 🌟
+        window.clearRow = function(btn) {
+            if(!confirm('Are you sure you want to clear all shifts for this day?')) return;
+            let tr = btn.closest('tr');
+            tr.querySelectorAll('.t-hr, .t-hr2').forEach(s => s.value = 'Select');
+            tr.querySelectorAll('.t-ampm, .t-ampm2').forEach(s => s.value = 'AM');
+            tr.querySelectorAll('.staff-select').forEach(s => s.value = 'None');
+            tr.querySelectorAll('.task-select').forEach(s => s.value = 'Select Task');
+            tr.querySelectorAll('.shift-hours-badge').forEach(s => s.innerHTML = '');
+            showToast('Day cleared successfully!');
+        };
 
         let targetSelectInput = null;
 
         document.getElementById('rosterGrid').addEventListener('change', function(e) {
             if (e.target.classList.contains('t-hr') || e.target.classList.contains('t-ampm') || 
                 e.target.classList.contains('t-hr2') || e.target.classList.contains('t-ampm2')) {
-                
                 let td = e.target.closest('td');
-                let hr1 = td.querySelector('.t-hr').value;
-                let ampm1 = td.querySelector('.t-ampm').value;
-                let hr2 = td.querySelector('.t-hr2').value;
-                let ampm2 = td.querySelector('.t-ampm2').value;
+                let hr1 = td.querySelector('.t-hr').value, ampm1 = td.querySelector('.t-ampm').value;
+                let hr2 = td.querySelector('.t-hr2').value, ampm2 = td.querySelector('.t-ampm2').value;
 
+                // Update Hours Badge
+                let badge = td.querySelector('.shift-hours-badge');
+                if(badge) badge.innerHTML = calcShiftHours(hr1, ampm1, hr2, ampm2);
+
+                // Overtime check
                 if (hr1 !== 'Select' && hr2 !== 'Select' && hr1.includes(':') && hr2.includes(':')) {
                     let parseTime = (timeStr, ampm) => {
                         let [h, m] = timeStr.split(':').map(Number);
@@ -438,13 +517,9 @@
                         if (ampm === 'AM' && h === 12) h = 0;
                         return h + (m / 60);
                     };
-
-                    let t1 = parseTime(hr1, ampm1);
-                    let t2 = parseTime(hr2, ampm2);
+                    let t1 = parseTime(hr1, ampm1), t2 = parseTime(hr2, ampm2);
                     let diff = t2 - t1;
-
                     if (diff < 0) diff += 24; 
-
                     if (diff > 10) {
                         targetSelectInput = e.target; 
                         document.getElementById('timeWarningText').innerHTML = `You are trying to set a shift that is <b>${diff.toFixed(1)} hours</b> long. This exceeds the 10-hour limit.<br><br>Do you want to update this shift?`;
@@ -456,20 +531,23 @@
 
         function closeTimeWarning(isYes) {
             document.getElementById('timeWarningModal').style.display = 'none';
-            if (!isYes && targetSelectInput) {
+            if (!isYes && targetSelectInput) { 
                 targetSelectInput.value = 'Select'; 
+                // re-calc hours
+                let td = targetSelectInput.closest('td');
+                let badge = td.querySelector('.shift-hours-badge');
+                if(badge) badge.innerHTML = '';
             }
             targetSelectInput = null;
         }
 
         function saveRoster() {
             if (currentRole === 'staff') return; 
-
             const btn = document.getElementById('saveBtn');
             const loc = document.getElementById('locationSelect').value;
             const date = document.getElementById('rosterStartDate').value;
             
-            btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Saving to Cloud...';
+            btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Saving...';
             btn.disabled = true;
 
             let data = [];
@@ -480,8 +558,7 @@
                         rowData.push({ 
                             hr1: td.querySelector('.t-hr').value, ampm1: td.querySelector('.t-ampm').value,
                             hr2: td.querySelector('.t-hr2').value, ampm2: td.querySelector('.t-ampm2').value,
-                            staff: td.querySelector('.staff-select').value,
-                            task: td.querySelector('.task-select').value 
+                            staff: td.querySelector('.staff-select').value, task: td.querySelector('.task-select').value 
                         });
                     }
                 });
@@ -491,28 +568,20 @@
             const uniqueKey = "Roster_" + loc.replace(/[.#$\[\] ]/g, '_') + "_" + date;
 
             database.ref('rosters/' + uniqueKey).set(data)
-            .then(() => {
-                alert("Roster successfully saved to Cloud Database! ☁️✅");
-            })
-            .catch((error) => {
-                alert("Save Failed! Please check Firebase rules or internet connection.");
-                console.error(error);
-            })
-            .finally(() => {
-                btn.innerHTML = '<i class="fas fa-save"></i> Save Roster';
-                btn.disabled = false;
-            });
+            .then(() => { showToast("Roster saved securely to Cloud! ☁️✅"); })
+            .catch((error) => { showToast("Save Failed! Check connection.", true); console.error(error); })
+            .finally(() => { btn.innerHTML = '<i class="fas fa-save"></i> Save Roster'; btn.disabled = false; });
         }
 
         function exportToExcel() {
             if (currentRole === 'staff') return;
-
             const loc = document.getElementById('locationSelect').value;
             const headers = Array.from(document.querySelectorAll('#rosterHeader th')).map(th => th.innerText);
             let csv = `Location: ${loc}\n${headers.join(',')}\n`;
             document.querySelectorAll('#rosterGrid tr').forEach(row => {
                 const cells = row.querySelectorAll('td');
-                let r = [`"${cells[0].innerText.replace(/\n/g,' ')}"`];
+                let rowLabel = cells[0].innerText.replace(/\n/g,' ').replace('Clear Day', '').trim();
+                let r = [`"${rowLabel}"`];
                 for(let i=1; i<cells.length; i++) {
                     let td = cells[i];
                     let hr1 = td.querySelector('.t-hr').value, ampm1 = td.querySelector('.t-ampm').value;
@@ -523,7 +592,6 @@
                         let t = "";
                         if (hr1 !== "Select" && hr2 !== "Select") t = `${hr1} ${ampm1} - ${hr2} ${ampm2}`;
                         else if (hr1 !== "Select") t = `${hr1} ${ampm1}`;
-                        
                         let parts = [s];
                         if (tsk !== "Select Task") parts.push(tsk);
                         if (t !== "") parts.push(`(${t})`);
@@ -534,17 +602,14 @@
             });
             const blob = new Blob([csv], { type: 'text/csv' });
             const a = document.createElement('a'); a.href = URL.createObjectURL(blob); a.download = `Roster.csv`; a.click();
+            showToast("Excel Export Started! 📊");
         }
 
-        // 🌟 TRIGGERED FROM INSIDE THE MODAL 🌟
         async function executeSendEmail() {
             let checkedBoxes = document.querySelectorAll('.email-checkbox:checked');
             let selectedEmails = Array.from(checkedBoxes).map(cb => cb.value);
 
-            if(selectedEmails.length === 0) {
-                alert("Please select at least one email address!");
-                return;
-            }
+            if(selectedEmails.length === 0) { showToast("Select at least 1 email address!", true); return; }
 
             const btn = document.getElementById('finalSendBtn');
             const loc = document.getElementById('locationSelect').value;
@@ -554,10 +619,11 @@
             btn.disabled = true;
 
             let tableHtml = `
-            <div style="overflow-x: auto; max-width: 100%; margin: 0 auto;">
-                <table style="width:100%; min-width: 650px; border-collapse:collapse; font-size:13px; font-family: Arial, sans-serif; border:1px solid #ddd;">
-                    <tr style="background:#90c2e7; color:#000;">
-                        ${headers.map(h => `<th style="padding:10px; border:1px solid #ccc; white-space: nowrap;">${h}</th>`).join('')}
+            <div style="overflow-x: auto; max-width: 100%; margin: 0 auto; font-family: Arial, sans-serif;">
+                <h3 style="color:#333; margin-bottom:10px;">New Roster for ${loc}</h3>
+                <table style="width:100%; min-width: 650px; border-collapse:collapse; font-size:14px; border:1px solid #ddd;">
+                    <tr style="background:#00a2ed; color:#ffffff;">
+                        ${headers.map(h => `<th style="padding:12px 10px; border:1px solid #008ecc; white-space: nowrap;">${h}</th>`).join('')}
                     </tr>`;
 
             document.querySelectorAll('#rosterGrid tr').forEach(row => {
@@ -566,19 +632,18 @@
 
                 let bElement = cells[0].querySelector('b');
                 let spanElement = cells[0].querySelector('span');
-                
                 let dayDateText = bElement ? bElement.innerText : '';
                 let weekdayText = spanElement ? spanElement.innerText : '';
                 let holidayTag = cells[0].querySelector('.holiday-alert-tag');
                 
-                let dateEmailHtml = `<span style="font-size:13px; color:#333;">${dayDateText}</span><br><span style="font-size:13px; color:#333;">${weekdayText}</span>`;
+                let dateEmailHtml = `<span style="color:#333;">${dayDateText}</span><br><span style="color:#555;">${weekdayText}</span>`;
                 
                 if(holidayTag) {
                     let holidayName = holidayTag.innerText.replace('★', '').trim();
-                    dateEmailHtml += `<br><br><span style="text-transform:uppercase; font-size:12px; color:#333;">${holidayName}</span><br><b style="color:#0066cc; font-size:13px;">Public Holiday</b>`;
+                    dateEmailHtml += `<br><span style="text-transform:uppercase; font-size:13px; color:#333;">${holidayName}</span>`;
                 }
 
-                let rData = `<tr><td style="padding:10px; border:1px solid #ccc; background:#dce9f4; vertical-align:middle; white-space:nowrap; text-align:left;">${dateEmailHtml}</td>`;
+                let rData = `<tr><td style="padding:15px 10px; border:1px solid #ddd; background:#f0f7fb; vertical-align:top; white-space:nowrap; text-align:left; line-height:1.5;">${dateEmailHtml}</td>`;
                 let hasEntry = false;
 
                 for(let i=1; i<cells.length; i++) {
@@ -593,17 +658,14 @@
                         if (hr2 && hr2 !== "Select") timeParts.push(`${hr2} ${ampm2}`);
                         let t = timeParts.join(' - ');
 
-                        let timeHtml = (t === "") ? "" : `<br><span style="color:#0066cc; font-size:12px;">${t}</span>`;
-                        let taskHtml = (!tsk || tsk === "Select Task") ? "" : `<br><span style="font-size:12px; color:#333;">${tsk}</span>`;
+                        let cellHtml = `<strong style="font-size:15px; color:#000;">${s}</strong>`;
+                        if(tsk && tsk !== "Select Task") { cellHtml += `<br><span style="font-size:13px; color:#64748b;">${tsk}</span>`; }
+                        if(t !== "") { cellHtml += `<br><strong style="color:#00a2ed; font-size:13px;">${t}</strong>`; }
                         
-                        rData += `<td style="padding:10px; border:1px solid #ccc; text-align:center; vertical-align:middle; background:#fff;">
-                                    <strong style="font-size:14px; color:#000;">${s}</strong>
-                                    ${timeHtml}
-                                    ${taskHtml}
-                                  </td>`;
+                        rData += `<td style="padding:15px 10px; border:1px solid #ddd; text-align:center; vertical-align:middle; background:#fff; line-height:1.6;">${cellHtml}</td>`;
                         hasEntry = true;
                     } else {
-                        rData += `<td style="padding:10px; border:1px solid #ccc; color:#999; text-align:center; vertical-align:middle; background:#fff;">-</td>`;
+                        rData += `<td style="padding:15px 10px; border:1px solid #ddd; text-align:center; vertical-align:middle; color:#ccc; background:#fff;">-</td>`;
                     }
                 }
                 if(hasEntry) tableHtml += rData + `</tr>`;
@@ -613,20 +675,14 @@
             try {
                 for (let i = 0; i < selectedEmails.length; i++) {
                     btn.innerHTML = `<i class="fas fa-spinner fa-spin"></i> Sending (${i + 1}/${selectedEmails.length})...`;
-                    await emailjs.send(SERVICE_ID, TEMPLATE_ID, { 
-                        to_email: selectedEmails[i], 
-                        message: "New Roster for " + loc, 
-                        roster_table: tableHtml 
-                    });
-                    
-                    if (i < selectedEmails.length - 1) {
-                        await new Promise(resolve => setTimeout(resolve, 4000));
-                    }
+                    await emailjs.send(SERVICE_ID, TEMPLATE_ID, { to_email: selectedEmails[i], message: "New Roster for " + loc, roster_table: tableHtml });
+                    if (i < selectedEmails.length - 1) { await new Promise(resolve => setTimeout(resolve, 4000)); }
                 }
-                alert('SUCCESS! Mails sent to selected addresses 🚀'); 
-                closeEmailModal(); // Close modal upon success
+                showToast('Mails sent successfully! 🚀'); 
+                closeEmailModal();
             } catch (err) {
-                alert('Error: ' + (err.text || 'Email failed.')); 
+                showToast('Email failed to send!', true); 
+                console.error(err);
             } finally {
                 btn.innerHTML = '<i class="fas fa-paper-plane"></i> Send Mail to Selected'; 
                 btn.disabled = false; 
@@ -634,8 +690,14 @@
         }
 
         window.onload = function() {
-            buildGrid();
             updateLiveClocks();
+            firebase.auth().onAuthStateChanged((user) => {
+                if (user) {
+                    buildGrid();
+                } else {
+                    window.location.replace('crm-login.html');
+                }
+            });
         };
     </script>
 </body>
