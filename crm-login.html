@@ -8,8 +8,7 @@
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
     
     <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
-    <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-auth.js"></script>
-    <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-database.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-auth.js"></script> <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-database.js"></script>
 
     <style>
         :root { --primary: #0f172a; --secondary: #10b981; --bg-color: #f8fafc; }
@@ -23,14 +22,15 @@
         
         .input-group { margin-bottom: 20px; position: relative; }
         .input-group label { display: block; font-size: 13px; font-weight: 700; margin-bottom: 8px; color: #475569; }
-        .input-group input { width: 100%; padding: 14px 15px 14px 40px; border-radius: 12px; border: 1.5px solid #e2e8f0; font-size: 14px; background: #f8fafc; }
+        .input-group input { width: 100%; padding: 14px 15px 14px 40px; border-radius: 12px; border: 1.5px solid #e2e8f0; font-size: 14px; background: #f8fafc; outline: none; transition: 0.3s; }
+        .input-group input:focus { border-color: #38bdf8; box-shadow: 0 0 0 3px rgba(56, 189, 248, 0.1); }
         .input-group i { position: absolute; left: 15px; top: 38px; color: #94a3b8; font-size: 16px; }
         
-        .btn-login { width: 100%; padding: 15px; border-radius: 12px; background: var(--primary); color: #fff; border: none; font-size: 15px; font-weight: 800; cursor: pointer; transition: 0.3s; margin-top: 10px; }
-        .btn-login:hover { background: #1e293b; transform: translateY(-2px); }
+        .btn-login { width: 100%; padding: 15px; border-radius: 12px; background: var(--primary); color: #fff; border: none; font-size: 15px; font-weight: 800; cursor: pointer; transition: 0.3s; margin-top: 10px; display: flex; justify-content: center; align-items: center; gap: 8px; }
+        .btn-login:hover { background: #1e293b; transform: translateY(-2px); box-shadow: 0 10px 20px rgba(15, 23, 42, 0.15); }
         #error-msg { color: #ef4444; background: #fef2f2; padding: 12px; border-radius: 8px; font-size: 13px; font-weight: 600; text-align: center; margin-top: 15px; display: none; border: 1px solid #fca5a5; }
         
-        .forgot-link { display: block; text-align: center; margin-top: 20px; color: #00a2ed; font-size: 13px; font-weight: 700; text-decoration: none; cursor: pointer; transition: 0.2s; }
+        .forgot-link { display: block; text-align: center; margin-top: 20px; color: #00a2ed; font-size: 13px; font-weight: 700; text-decoration: none; transition: 0.2s; }
         .forgot-link:hover { color: #008ecc; text-decoration: underline; }
     </style>
 </head>
@@ -54,15 +54,14 @@
                 <i class="fas fa-lock"></i>
             </div>
 
-            <button type="button" class="btn-login" id="loginBtn" onclick="processLogin()">Authenticate <i class="fas fa-arrow-right ms-2"></i></button>
+            <button type="button" class="btn-login" id="loginBtn" onclick="processLogin()">Authenticate <i class="fas fa-arrow-right"></i></button>
             <div id="error-msg"><i class="fas fa-exclamation-circle"></i> Invalid Username or Password.</div>
             
-            <a onclick="resetAdminPassword()" class="forgot-link">Forgot Password?</a>
+            <a href="crm-forgot-password.html" class="forgot-link">Forgot Password?</a>
         </div>
     </div>
 
     <script>
-        // 🚀 FIREBASE SETUP
         const firebaseConfig = {
             apiKey: "AIzaSyC-Ito4dNRQ45IjIOWL63Hqk9sKzbvKe-M",
             authDomain: "cureandcare-crm.firebaseapp.com",
@@ -71,83 +70,80 @@
         };
         firebase.initializeApp(firebaseConfig);
         const database = firebase.database();
-        const auth = firebase.auth();
 
-        // 🚀 LOGIN LOGIC (ONLY REAL USERS NOW)
+        // 🚀 SECURE LOGIN USING FIREBASE AUTH
         function processLogin() {
-            const usernameInput = document.getElementById('username').value.toLowerCase().trim().replace(/\s/g, '');
+            let usernameInput = document.getElementById('username').value.toLowerCase().trim().replace(/\s/g, '');
             const passwordInput = document.getElementById('password').value;
             const errorMsg = document.getElementById('error-msg');
             const btn = document.getElementById('loginBtn');
 
             if(!usernameInput || !passwordInput) {
-                errorMsg.innerHTML = '<i class="fas fa-exclamation-circle"></i> Please enter both fields.';
-                errorMsg.style.display = "block";
+                showError(btn, errorMsg, 'Please enter both fields.');
                 return;
             }
 
             errorMsg.style.display = "none";
             btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Verifying...';
 
-            // 🚀 REALTIME DATABASE CHECK
-            database.ref('users/' + usernameInput).once('value').then((snapshot) => {
-                if(snapshot.exists()) {
-                    const userData = snapshot.val();
-                    if(userData.password === passwordInput) {
+            const authEmail = usernameInput + "@cureandcare.com";
+
+            firebase.auth().signInWithEmailAndPassword(authEmail, passwordInput)
+            .then((userCredential) => {
+                database.ref('users/' + usernameInput).once('value').then((snapshot) => {
+                    if(snapshot.exists()) {
+                        const userData = snapshot.val();
                         loginSuccess(usernameInput, userData.role, userData.name);
                     } else {
-                        showError(btn, errorMsg);
+                        showError(btn, errorMsg, 'User details not found.');
                     }
+                });
+            })
+            .catch((error) => {
+                if (error.code === 'auth/user-not-found') {
+                    showError(btn, errorMsg, 'Account not secured yet. Contact Admin.');
                 } else {
-                    showError(btn, errorMsg);
+                    showError(btn, errorMsg, 'Incorrect Password.');
                 }
-            }).catch((error) => {
-                errorMsg.innerHTML = '<i class="fas fa-wifi"></i> Database connection error.';
-                errorMsg.style.display = "block";
-                btn.innerHTML = 'Authenticate <i class="fas fa-arrow-right ms-2"></i>';
+                console.error(error);
             });
         }
 
-        function showError(btn, errorMsg) {
-            errorMsg.innerHTML = '<i class="fas fa-exclamation-circle"></i> Invalid Username or Password.';
+        function showError(btn, errorMsg, msgText) {
+            errorMsg.innerHTML = '<i class="fas fa-exclamation-circle"></i> ' + msgText;
             errorMsg.style.display = "block";
-            btn.innerHTML = 'Authenticate <i class="fas fa-arrow-right ms-2"></i>';
+            btn.innerHTML = 'Authenticate <i class="fas fa-arrow-right"></i>';
         }
 
         function loginSuccess(username, role, name) {
-            const activeUser = { username: username, role: role, name: name };
+            let finalRole = role ? role.toLowerCase() : 'staff';
+            let finalName = name || username;
+
+            const activeUser = { username: username, role: finalRole, name: finalName };
             localStorage.setItem('currentUser', JSON.stringify(activeUser));
             
+            let btn = document.getElementById('loginBtn');
+            btn.innerHTML = '<i class="fas fa-check-circle"></i> Access Granted!';
+            btn.style.background = '#10b981';
+
             setTimeout(() => {
-                if(role === 'admin' || role === 'manager') {
+                if(finalRole === 'admin' || finalRole === 'manager' || finalRole === 'system admin') {
                     window.location.href = 'crm-home.html'; 
                 } else {
-                    window.location.href = 'crm.html';
+                    window.location.href = 'crm.html'; 
                 }
-            }, 800);
-        }
-
-        // 🚀 FORGOT PASSWORD (SUPER ADMIN ONLY)
-        function resetAdminPassword() {
-            const email = prompt("Enter Super Admin registered Email ID:");
-            if(email) {
-                auth.sendPasswordResetEmail(email)
-                    .then(() => alert("Reset link has been sent to " + email))
-                    .catch((err) => {
-                        if(err.code === 'auth/user-not-found') {
-                            alert("This email is not registered as a Super Admin in Firebase.");
-                        } else {
-                            alert("Error: " + err.message);
-                        }
-                    });
-            }
+            }, 1000);
         }
 
         window.onload = () => {
             const activeUser = JSON.parse(localStorage.getItem('currentUser'));
             if(activeUser) {
-                if(activeUser.role === 'admin' || activeUser.role === 'manager') window.location.href = 'crm-home.html';
-                else window.location.href = 'crm.html';
+                let r = activeUser.role ? activeUser.role.toLowerCase() : '';
+                if(r === 'admin' || r === 'manager' || r === 'system admin') {
+                    window.location.href = 'crm-home.html';
+                } else {
+                    window.location.href = 'crm.html';
+                }
             }
         };
 
@@ -155,5 +151,6 @@
             if (event.key === "Enter") processLogin();
         });
     </script>
+    <script src="security.js"></script>
 </body>
 </html>
