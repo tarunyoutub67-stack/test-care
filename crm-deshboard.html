@@ -2,18 +2,14 @@
 <html lang="en">
 <head>
     <script>
-        // 🚀 LOGIN SECURITY CHECK
         const activeUser = JSON.parse(localStorage.getItem('currentUser'));
         if (!activeUser) { 
             window.location.replace('crm-login.html'); 
         } 
-        else if (activeUser.role !== 'admin' && activeUser.role !== 'manager') {
-            alert("Access Denied: You don't have permission to view the Dashboard.");
-            window.location.replace('crm.html'); 
-        }
     </script>
 
     <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-auth.js"></script>
     <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-database.js"></script>
     
     <meta charset="UTF-8">
@@ -34,6 +30,12 @@
         .nav-item:hover { background: #f1f5f9; color: var(--text-main); }
         .nav-item.active { background: rgba(0,162,237,0.1); color: var(--primary); border-left: 4px solid var(--primary); }
         
+        .nav-item .caret { margin-left: auto; transition: transform 0.3s; }
+        .nav-item.open .caret { transform: rotate(180deg); }
+        .dropdown-container { display: none; padding-left: 15px; margin-bottom: 10px; border-left: 2px solid #e2e8f0; margin-left: 20px; }
+        .dropdown-container.open { display: block; }
+        .dropdown-container .nav-item { padding: 10px 15px; font-size: 12px; margin-bottom: 2px; }
+
         .main-content { flex: 1; display: flex; flex-direction: column; overflow: hidden; }
         .top-header { height: 65px; background: #fff; border-bottom: 1px solid var(--border); display: flex; align-items: center; justify-content: space-between; padding: 0 25px; flex-shrink: 0; }
         .page-title { font-size: 18px; font-weight: 700; color: var(--text-main); }
@@ -49,24 +51,48 @@
         .form-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 15px; margin-bottom: 15px; }
         .input-group { margin-bottom: 10px; }
         .input-group label { display: block; font-size: 12px; font-weight: 700; color: var(--text-main); margin-bottom: 5px; }
-        .input-group input[type="text"], .input-group input[type="email"], .input-group select { width: 100%; padding: 10px 12px; border: 1px solid #cbd5e1; border-radius: 6px; font-size: 13px; font-family: inherit; outline: none; }
+        .input-group input[type="text"], .input-group input[type="number"], .input-group input[type="date"], .input-group input[type="email"], .input-group select { width: 100%; padding: 10px 12px; border: 1px solid #cbd5e1; border-radius: 6px; font-size: 13px; font-family: inherit; outline: none; }
         .input-group input:focus, .input-group select:focus { border-color: var(--primary); }
         
+        .form-section { margin-bottom: 25px; padding-bottom: 20px; border-bottom: 1px dashed var(--border); }
+        .form-section:last-child { border-bottom: none; }
+        .form-section h3 { font-size: 14px; font-weight: 800; color: var(--primary); margin-bottom: 15px; text-transform: uppercase; letter-spacing: 0.5px; display:flex; justify-content:space-between; align-items:center;}
+        .pace-badge { background: #e0f2fe; color: #0284c7; padding: 4px 10px; border-radius: 4px; font-size: 11px; font-weight: 800; letter-spacing: 1px; }
+        .radio-group { display: flex; gap: 20px; align-items: center; margin-top: 8px; flex-wrap: wrap;}
+        .radio-label { font-size: 13px; font-weight: 600; color: var(--text-main); display: flex; align-items: center; gap: 6px; cursor: pointer; }
+
         .btn-action { background: var(--primary); color: white; border: none; padding: 12px 24px; border-radius: 6px; font-weight: 700; cursor: pointer; font-size: 14px; transition: 0.2s; display: inline-flex; align-items: center; gap: 8px; }
         .btn-action:hover { background: var(--primary-dark); }
         .btn-action:disabled { opacity: 0.7; cursor: not-allowed; }
         
         .data-table { width: 100%; border-collapse: collapse; margin-bottom: 10px; font-size: 13px; }
         .data-table th { background: #f8fafc; padding: 12px; text-align: left; border-bottom: 2px solid #cbd5e1; color: #334155; font-weight:800; text-transform:uppercase; white-space:nowrap; }
-        .data-table td { padding: 12px; border-bottom: 1px solid #e2e8f0; font-weight: 500; vertical-align: middle; }
+        .data-table td { padding: 12px; border-bottom: 1px solid #e2e8f0; font-weight: 500; vertical-align: middle;}
         
         .badge { padding: 4px 8px; border-radius: 4px; font-size: 10px; font-weight: 800; text-transform: uppercase; }
         .badge.admin { background: #fee2e2; color: #b91c1c; }
         .badge.manager { background: #fef08a; color: #854d0e; }
         .badge.staff { background: #dcfce7; color: #15803d; }
+
+        .crm-footer { background: #fff; padding: 12px 20px; text-align: center; font-size: 12px; font-weight: 600; color: var(--text-light); border-top: 1px solid var(--border); flex-shrink: 0; }
+        .crm-footer span { color: var(--primary); }
+
+        @keyframes popIn { 
+            0% { transform: scale(0.8); opacity: 0; } 
+            100% { transform: scale(1); opacity: 1; } 
+        }
     </style>
 </head>
 <body>
+
+    <div id="welcomeModal" style="display: none; position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: rgba(15, 23, 42, 0.7); z-index: 9999; align-items: center; justify-content: center; backdrop-filter: blur(4px);">
+        <div style="background: #fff; padding: 40px; border-radius: 20px; text-align: center; max-width: 400px; width: 90%; box-shadow: 0 20px 40px rgba(0,0,0,0.2); animation: popIn 0.5s ease;">
+            <img src="https://cdn-icons-png.flaticon.com/512/7936/7936922.png" alt="Welcome" style="width: 80px; margin-bottom: 20px;">
+            <h2 style="color: #1e293b; margin-bottom: 10px; font-weight: 800;">Welcome to CureAndCare!</h2>
+            <p style="color: #64748b; font-size: 15px; margin-bottom: 25px;">Hello <strong id="welcomeUserName" style="color: #00a2ed;">User</strong>, we are glad to have you here.</p>
+            <button onclick="document.getElementById('welcomeModal').style.display='none'" style="background: #00a2ed; color: white; border: none; padding: 12px 30px; border-radius: 10px; font-weight: 700; cursor: pointer; font-size: 15px; transition: 0.2s;">Let's Get Started <i class="fas fa-arrow-right" style="margin-left: 5px;"></i></button>
+        </div>
+    </div>
 
     <div class="sidebar">
         <div class="logo-area"><h2><i class="fas fa-heartbeat"></i> CureAndCare</h2></div>
@@ -78,7 +104,17 @@
                 <span style="background:#ef4444; color:#fff; font-size:9px; padding:2px 5px; border-radius:10px; margin-left:auto;">LIVE</span>
             </a>
 
-            <a href="crm.html" class="nav-item"><i class="fas fa-calendar-alt"></i> Time & Attendance</a>
+            <div id="fundingBlock" style="background:#e0f2fe; border: 1px solid #38bdf8; border-radius: 8px; margin: 10px 5px; overflow: hidden;">
+                <a href="#" class="nav-item" id="fundingMenuBtn" onclick="toggleDropdown('fundingDropdown', this)" style="color:#0284c7; font-weight:800;">
+                    <i class="fas fa-wallet"></i> FUNDING <i class="fas fa-chevron-down caret"></i>
+                </a>
+                <div class="dropdown-container" id="fundingDropdown" style="background:#fff; margin:0; padding:10px 15px; border-left:none;">
+                    <a href="#" class="nav-item" onclick="switchTab('ndisSection', this, true)"><i class="fas fa-file-contract"></i> Create NDIS & Services</a>
+                    <a href="crm-invoice.html" class="nav-item"><i class="fas fa-file-invoice-dollar"></i> Invoice & Claims</a>
+                </div>
+            </div>
+
+            <a href="crm.html" class="nav-item"><i class="fas fa-calendar-alt"></i> Time & Attendance (Roster)</a>
             <a href="#" class="nav-item" id="navHr" onclick="switchTab('hrSection', this)"><i class="fas fa-users-cog"></i> HR (Manage Staff)</a>
         </div>
     </div>
@@ -88,7 +124,7 @@
             <div class="page-title" id="pageTitle">Dashboard Overview</div>
             <div class="user-profile">
                 <i class="fas fa-user-circle" style="font-size:18px; color:var(--primary);"></i> 
-                <span id="displayAdminName">Admin</span>
+                <span id="displayAdminName">User</span>
                 <span id="roleBadge" class="badge"></span>
                 <button onclick="logout()" style="background:#ef4444; color:#fff; border:none; padding:6px 12px; border-radius:6px; cursor:pointer; font-weight:700; font-size:11px; margin-left:10px;">Logout</button>
             </div>
@@ -97,7 +133,45 @@
         <div id="dashboardSection" class="app-section active">
             <div class="panel" style="background: linear-gradient(135deg, #00a2ed 0%, #0066cc 100%); color: white;">
                 <h1 style="font-size: 24px; font-weight: 800; margin-bottom: 5px;">Welcome back!</h1>
-                <p>Manage NDIS Engagements, Billing, and Live Rosters from here.</p>
+                <p>Manage Engagements, Updates, and Live Rosters from here.</p>
+            </div>
+            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 20px;">
+                <div class="panel">
+                    <h3 style="margin-bottom:15px;"><i class="fas fa-bolt" style="color:#eab308;"></i> Quick Links</h3>
+                    <div style="display:flex; flex-direction:column; gap:10px;">
+                        <button class="btn-action" onclick="window.location.href='crm-chat.html'" style="width:100%; justify-content:center; background:#f0fdf4; color:#16a34a; border:1px solid #bbf7d0;">
+                            <i class="fas fa-comments"></i> Open Team Chat
+                        </button>
+                        <button id="btnNdis" class="btn-action" onclick="document.getElementById('fundingMenuBtn').click(); switchTab('ndisSection', this, true);" style="width:100%; justify-content:center; background:#f8fafc; color:#1e293b; border:1px solid #cbd5e1;"><i class="fas fa-plus"></i> Open NDIS Module</button>
+                        <button id="btnInvoice" class="btn-action" onclick="window.location.href='crm-invoice.html'" style="width:100%; justify-content:center; background:#f8fafc; color:#1e293b; border:1px solid #cbd5e1;"><i class="fas fa-file-invoice"></i> Generate Invoices</button>
+                        <button class="btn-action" onclick="window.location.href='crm.html'" style="width:100%; justify-content:center; background:#f8fafc; color:#1e293b; border:1px solid #cbd5e1;"><i class="fas fa-calendar-alt"></i> Manage Shift Calendar</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div id="ndisSection" class="app-section">
+            <div class="panel" style="max-width: 1000px; margin: 0 auto;">
+                <div class="panel-header"><div class="panel-title"><i class="fas fa-hand-holding-medical" style="color:var(--primary);"></i> Create NDIS engagement</div></div>
+                <div class="form-section">
+                    <h3>Client information <span class="pace-badge">PACE</span></h3>
+                    <div class="input-group" style="margin-bottom:15px;">
+                        <label>Create new client or use existing client? *</label>
+                        <div class="radio-group"><label class="radio-label"><input type="radio" name="clientType" checked> Create new client</label><label class="radio-label"><input type="radio" name="clientType"> Use existing client</label></div>
+                    </div>
+                    <div class="input-group" style="margin-bottom:20px;">
+                        <label>Create as *</label>
+                        <div class="radio-group"><label class="radio-label"><input type="radio" name="createAs"> Client (multi-contact group)</label><label class="radio-label"><input type="radio" name="createAs" checked> Client (individual)</label></div>
+                    </div>
+                    <div class="form-grid">
+                        <div class="input-group"><label>NDIS number</label><input type="text" placeholder="Enter NDIS No."></div>
+                        <div class="input-group"><label>First name *</label><input type="text" placeholder="First Name"></div>
+                        <div class="input-group"><label>Last name *</label><input type="text" placeholder="Last Name"></div>
+                        <div class="input-group"><label>Phone 1</label><input type="text" placeholder="Phone 1"></div>
+                        <div class="input-group"><label>Email</label><input type="email" placeholder="Email Address"></div>
+                        <div class="input-group"><label>Date of birth</label><input type="date"></div>
+                    </div>
+                </div>
             </div>
         </div>
 
@@ -155,21 +229,14 @@
                 </table>
             </div>
         </div>
+
+        <footer class="crm-footer">
+            Copyright © 2026 cure and care | Designed by <span>skywebsolutions.in</span>
+        </footer>
+
     </div>
 
     <script>
-        // 🚀 UI SETUP & ROLE DISPLAY
-        if(activeUser) {
-            document.getElementById('displayAdminName').innerText = activeUser.name || activeUser.username;
-            let bClass = activeUser.role === 'admin' ? 'badge admin' : (activeUser.role === 'manager' ? 'badge manager' : 'badge staff');
-            document.getElementById('roleBadge').className = bClass;
-            document.getElementById('roleBadge').innerText = activeUser.role;
-
-            if(activeUser.role === 'staff') {
-                document.getElementById('navHr').style.display = 'none';
-            }
-        }
-
         // 🚀 FIREBASE SETUP
         const firebaseConfig = { 
             apiKey: "AIzaSyC-Ito4dNRQ45IjIOWL63Hqk9sKzbvKe-M", 
@@ -177,84 +244,119 @@
             databaseURL: "https://cureandcare-crm-default-rtdb.firebaseio.com", 
             projectId: "cureandcare-crm" 
         };
-        
-        if (!firebase.apps.length) {
-            firebase.initializeApp(firebaseConfig);
-        }
+        if (!firebase.apps.length) firebase.initializeApp(firebaseConfig);
         const database = firebase.database();
 
-        function switchTab(sectionId, element) {
+        if(activeUser) {
+            document.getElementById('displayAdminName').innerText = activeUser.name || activeUser.username;
+            let currentRole = String(activeUser.role || '').toLowerCase();
+            let bClass = currentRole === 'admin' ? 'badge admin' : (currentRole === 'manager' ? 'badge manager' : 'badge staff');
+            document.getElementById('roleBadge').className = bClass;
+            document.getElementById('roleBadge').innerText = currentRole.toUpperCase();
+
+            if(currentRole === 'staff') {
+                document.getElementById('navHr').style.display = 'none'; 
+                document.getElementById('fundingBlock').style.display = 'none'; 
+                document.getElementById('btnNdis').style.display = 'none'; 
+                document.getElementById('btnInvoice').style.display = 'none'; 
+            }
+        }
+
+        function toggleDropdown(id, el) {
+            document.getElementById(id).classList.toggle('open');
+            el.classList.toggle('open');
+        }
+
+        function switchTab(sectionId, element, isSubmenu = false) {
             document.querySelectorAll('.app-section').forEach(sec => sec.classList.remove('active'));
             document.getElementById(sectionId).classList.add('active');
             
             document.querySelectorAll('.nav-item').forEach(nav => nav.classList.remove('active'));
-            element.classList.add('active');
+            if (element) { element.classList.add('active'); }
             
+            if(!isSubmenu) {
+                document.getElementById('fundingDropdown').classList.remove('open');
+                document.getElementById('fundingMenuBtn').classList.remove('open');
+            } else {
+                document.getElementById('fundingMenuBtn').classList.add('active');
+                document.getElementById('fundingDropdown').classList.add('open');
+            }
+
             const titleEl = document.getElementById('pageTitle');
             if(sectionId === 'hrSection') { 
                 titleEl.innerText = 'HR - Manage Staff'; 
                 loadStaffDirectory(); 
+            } else if (sectionId === 'ndisSection') {
+                titleEl.innerText = 'Create NDIS Engagement';
             } else { 
                 titleEl.innerText = 'Dashboard Overview'; 
             }
         }
 
+        // 🚀 SECURE LOGOUT
         function logout() { 
-            localStorage.clear(); 
-            window.location.replace('crm-login.html'); 
-        }
-
-        // ==================== 🚀 HR CREATION ====================
-        function createStaff() {
-            if (activeUser.role !== 'admin') {
-                alert("Access Denied: Only Admins can create new staff members.");
-                return;
-            }
-
-            const name = document.getElementById('staffName').value.trim();
-            const username = document.getElementById('staffUsername').value.trim().toLowerCase().replace(/\s/g, ''); 
-            const email = document.getElementById('staffEmail').value.trim(); // OPTIONAL
-            const pass = document.getElementById('staffPassword').value.trim();
-            const role = document.getElementById('staffRole').value;
-
-            // Notice we only check name, username, and pass. Email is skipped so it remains optional.
-            if(!name || !username || !pass) { 
-                alert("Please fill Name, Username, and Password fields!"); 
-                return; 
-            }
-
-            const btn = document.getElementById('createStaffBtn');
-            const originalText = btn.innerHTML;
-            btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Creating...';
-            btn.disabled = true;
-
-            const userData = { 
-                name: name, 
-                password: pass, 
-                role: role 
-            };
-
-            // Only add email to database if provided
-            if (email) {
-                userData.email = email;
-            }
-
-            database.ref('users/' + username).set(userData).then(() => {
-                alert(`✅ User @${username} created successfully!`);
-                document.getElementById('staffName').value = ''; 
-                document.getElementById('staffUsername').value = ''; 
-                document.getElementById('staffEmail').value = ''; 
-                document.getElementById('staffPassword').value = '';
-                loadStaffDirectory(); 
-            }).catch((error) => {
-                alert("Error creating user: " + error.message);
-            }).finally(() => {
-                btn.innerHTML = originalText;
-                btn.disabled = false;
+            firebase.auth().signOut().then(() => {
+                localStorage.clear(); 
+                sessionStorage.clear(); 
+                window.location.replace('crm-login.html'); 
             });
         }
 
-        // ==================== 🚀 LOAD DIRECTORY ====================
+        // 🚀 SECURE STAFF CREATION
+       function createStaff() {
+    if (activeUser.role !== 'admin') {
+        alert("Access Denied: Only Admins can create new staff members.");
+        return;
+    }
+
+    const name = document.getElementById('staffName').value.trim();
+    const username = document.getElementById('staffUsername').value.trim().toLowerCase().replace(/\s/g, ''); 
+    const email = document.getElementById('staffEmail').value.trim() || (username + "@cureandcare.com");
+    const pass = document.getElementById('staffPassword').value.trim();
+    const role = document.getElementById('staffRole').value;
+
+    if(!name || !username || !pass) { 
+        alert("Please fill Name, Username, and Password fields!"); 
+        return; 
+    }
+
+    const btn = document.getElementById('createStaffBtn');
+    const originalText = btn.innerHTML;
+    btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Creating...';
+    btn.disabled = true;
+
+    // Firebase Auth mein user register karo
+    firebase.auth().createUserWithEmailAndPassword(email, pass)
+    .then((userCredential) => {
+        // Auth ban gaya, ab Database mein details save karo
+        const userData = { 
+            name: name, 
+            password: pass, 
+            role: role,
+            email: email
+        };
+        
+        return database.ref('users/' + username).set(userData);
+    })
+    .then(() => {
+        alert("✅ Success! User created in Firebase and Database.");
+        document.getElementById('staffName').value = ''; 
+        document.getElementById('staffUsername').value = ''; 
+        document.getElementById('staffEmail').value = ''; 
+        document.getElementById('staffPassword').value = '';
+        loadStaffDirectory(); 
+    })
+    .catch((error) => {
+        alert("Error: " + error.message);
+        console.error("Creation Error:", error);
+    })
+    .finally(() => {
+        btn.innerHTML = originalText;
+        btn.disabled = false;
+    });
+}
+
+        // 🚀 LOAD STAFF DIRECTORY WITH ERROR LOGGING
         function loadStaffDirectory() {
             const tbody = document.getElementById('staffTableBody');
             tbody.innerHTML = '<tr><td colspan="6" style="text-align:center;"><i class="fas fa-spinner fa-spin"></i> Fetching users...</td></tr>';
@@ -277,7 +379,6 @@
                         if(rawRole === 'admin') badgeClass = 'badge admin';
                         if(rawRole === 'manager') badgeClass = 'badge manager';
 
-                        // 🚀 ONLY ADMINS GET THE ACTIONS BUTTONS
                         let actionButtons = '';
                         if (activeUser.role === 'admin') {
                             actionButtons = `
@@ -304,58 +405,64 @@
                     tbody.innerHTML = '<tr><td colspan="6" style="text-align:center; padding: 20px; color:#94a3b8;">No registered users found.</td></tr>'; 
                 }
             }).catch(error => {
-                tbody.innerHTML = `<tr><td colspan="6" style="text-align:center; color:red;"><i class="fas fa-exclamation-triangle"></i> Error loading data: ${error.message}</td></tr>`;
+                // Better Error Logging added here
+                tbody.innerHTML = `<tr><td colspan="6" style="text-align:center; color:red;"><i class="fas fa-exclamation-triangle"></i> Firebase Error: ${error.message}</td></tr>`;
+                console.error("Database Fetch Error:", error);
             });
         }
 
-        // ==================== 🚀 ADMIN ACTION: RESET PASSWORD ====================
-        function resetPassword(username) {
-            if (activeUser.role !== 'admin') {
-                alert("❌ Permission Denied: Only Admins can reset passwords.");
-                return;
-            }
+        window.resetPassword = function(username) {
+    if (activeUser.role !== 'admin') return alert("❌ Only Admins can reset passwords.");
+    
+    const newPassword = prompt(`🔑 Enter new password for @${username}:`);
+    if(newPassword && newPassword.trim().length >= 6) { // Password min 6 chars ka hona chahiye
+        const newPass = newPassword.trim();
+        
+        // 1. Database mein password update karein
+        database.ref('users/' + username).update({ password: newPass })
+        .then(() => {
+            alert(`✅ Password updated in Database for @${username}`);
+            loadStaffDirectory(); // Table refresh karein
+        })
+        .catch((error) => {
+            alert("❌ Error updating database: " + error.message);
+        });
 
-            const newPassword = prompt(`🔑 Enter new password for @${username}:`);
-            if(newPassword && newPassword.trim() !== '') {
-                database.ref('users/' + username).update({
-                    password: newPassword.trim()
-                }).then(() => {
-                    alert(`✅ Password successfully updated for @${username}`);
-                    loadStaffDirectory(); // Refresh table immediately
-                }).catch((error) => {
-                    alert("❌ Error updating password: " + error.message);
-                });
-            }
-        }
+    } else if (newPassword && newPassword.trim().length < 6) {
+        alert("❌ Password must be at least 6 characters long.");
+    }
+};
 
-        // ==================== 🚀 ADMIN ACTION: DELETE USER ====================
-        function deleteStaff(username) {
-            if (activeUser.role !== 'admin') {
-                alert("❌ Permission Denied: Only Admins can delete users.");
-                return;
-            }
-
-            if(username === activeUser.username) {
-                alert("❌ Error: You cannot delete your own account while you are logged in!");
-                return;
-            }
-
-            if(confirm(`⚠️ WARNING: Are you sure you want to permanently delete user '@${username}'?`)) {
-                database.ref('users/' + username).remove().then(() => {
-                    alert(`✅ User @${username} has been deleted successfully.`);
-                    loadStaffDirectory(); // Refresh table immediately
-                }).catch((error) => {
-                    alert("❌ Delete failed: " + error.message);
-                });
-            }
-        }
-
-        // LOAD ON START
+        // 🚀 UPDATED ONLOAD: WAITS FOR FIREBASE AUTH
         window.onload = function() {
-            if(activeUser && (activeUser.role === 'admin' || activeUser.role === 'manager')) {
-                loadStaffDirectory();
-            }
+            firebase.auth().onAuthStateChanged((user) => {
+                if (user) {
+                    console.log("Secure Session Active!");
+                    
+                    if(activeUser && (activeUser.role === 'admin' || activeUser.role === 'manager')) {
+                        loadStaffDirectory();
+                    }
+
+                    let target = localStorage.getItem('targetTab');
+                    if(target) {
+                        if(target === 'ndisSection') { switchTab('ndisSection', null, true); } 
+                        else if(target === 'hrSection') { switchTab('hrSection', document.getElementById('navHr')); } 
+                        else { switchTab('dashboardSection', document.querySelector('[onclick*="dashboardSection"]')); }
+                        localStorage.removeItem('targetTab');
+                    }
+
+                    if (!sessionStorage.getItem('hasSeenWelcome')) {
+                        let userName = activeUser.name || activeUser.username;
+                        document.getElementById('welcomeUserName').innerText = userName;
+                        document.getElementById('welcomeModal').style.display = 'flex';
+                        sessionStorage.setItem('hasSeenWelcome', 'true');
+                    }
+                } else {
+                    window.location.replace('crm-login.html');
+                }
+            });
         };
     </script>
+    <script src="security.js"></script>
 </body>
 </html>
